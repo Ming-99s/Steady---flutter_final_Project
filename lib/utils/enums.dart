@@ -12,3 +12,7 @@ enum MoodType {
 
   const MoodType({required this.image, required this.title});
 }
+
+enum AllTab{
+  home,add,tracker,setting
+}
