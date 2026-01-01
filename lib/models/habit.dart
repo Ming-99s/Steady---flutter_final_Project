@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import '../utils/enums.dart';
 
-class Habbit{
+class Habit{
   final String habbitId;
   final String title;
   final String? description;
   final int timePerDay;
   final IconData icon;
   final List<Day> schedule;
+  final DateTime startDate;
 
-  Habbit({required this.habbitId,required this.title,this.description,required this.timePerDay,required this.icon,required this.schedule});
+
+  Habit({required this.habbitId,required this.title,this.description,required this.timePerDay,required this.icon,required this.schedule,required this.startDate});
 }
