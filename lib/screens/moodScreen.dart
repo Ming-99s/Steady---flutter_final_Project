@@ -15,6 +15,7 @@ class MoodScreen extends StatefulWidget {
 class _MoodScreenState extends State<MoodScreen> {
   String? _selectedMood; // store the selected mood title
 
+
   @override
   Widget build(BuildContext context) {
     // List of moods
@@ -118,7 +119,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => HomeScreen(),
+                            builder: (_) => Home(),
                           ),
                         );
                       },
