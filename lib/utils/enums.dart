@@ -2,8 +2,13 @@ enum Day{
   monday,tuesday,wednesday,thursday,friday,saturday,sunday
 }
 enum MoodType {
-  happy,
-  normal,
-  stressed,
-  sad,
+  motivate(image: 'motivate.png', title: 'Motivation'),
+  normal(image: 'okay.png', title: 'Okay'),
+  stressed(image: 'stressed.png', title: 'Stressed'),
+  tired(image: 'tired.png', title: 'Tired');
+
+  final String image;
+  final String title;
+
+  const MoodType({required this.image, required this.title});
 }
