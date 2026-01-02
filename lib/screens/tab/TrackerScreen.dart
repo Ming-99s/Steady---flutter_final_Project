@@ -109,34 +109,52 @@ class HabitCard extends StatefulWidget {
 }
 
 class _HabitCardState extends State<HabitCard> {
+  late List<DailyProgress> _dailyProgress;
+
+  @override
+  void initState() {
+    super.initState();
+    // Maintain a local copy of the dailyProgress list to avoid mutating
+    // the list passed in through the widget's constructor.
+    _dailyProgress = List<DailyProgress>.from(widget.dailyProgress);
+  }
+
+  @override
+  void didUpdateWidget(covariant HabitCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the parent provides a new dailyProgress list, refresh the local copy.
+    if (oldWidget.dailyProgress != widget.dailyProgress) {
+      _dailyProgress = List<DailyProgress>.from(widget.dailyProgress);
+    }
+  }
+
   void _toggleTodayCompletion() {
     setState(() {
       // Get today's daily progress (last item)
-      if (widget.dailyProgress.isNotEmpty) {
-        widget.dailyProgress.last.isCompleted =
-            !widget.dailyProgress.last.isCompleted;
+      if (_dailyProgress.isNotEmpty) {
+        _dailyProgress.last.isCompleted =
+            !_dailyProgress.last.isCompleted;
       }
     });
   }
 
   void _toggleDateCompletion(int index) {
     setState(() {
-      widget.dailyProgress[index].isCompleted =
-          !widget.dailyProgress[index].isCompleted;
+      _dailyProgress[index].isCompleted =
+          !_dailyProgress[index].isCompleted;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     // Calculate completion count from dailyProgress
-    final completionCount = widget.dailyProgress
+    final completionCount = _dailyProgress
         .where((day) => day.isCompleted)
         .length;
 
     // Check if today is completed (last item in the list)
     final isTodayCompleted =
-        widget.dailyProgress.isNotEmpty &&
-        widget.dailyProgress.last.isCompleted;
+        _dailyProgress.isNotEmpty && _dailyProgress.last.isCompleted;
 
     return Container(
       padding: const EdgeInsets.all(20),
