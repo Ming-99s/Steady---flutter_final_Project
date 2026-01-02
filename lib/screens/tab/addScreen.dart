@@ -106,6 +106,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> with SingleTickerProvid
       habbitId: DateTime.now().toString(),
       title: _titleController.text,
       description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+      // Default time-per-day in minutes. Currently fixed at 30 because the UI does not yet
+      // support configuring this value; update here when a configurable control is added.
       timePerDay: 30,
       icon: _selectedIcon,
       schedule: _selectedDays.toList(),
