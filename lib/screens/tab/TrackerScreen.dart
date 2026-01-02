@@ -15,7 +15,8 @@ class _TrackerscreenState extends State<Trackerscreen> {
     // Sample data - generates 147 days of data with randomized completion
     final sampleDailyProgress1 = List.generate(147, (index) {
       // Randomly mark some days as completed for more realistic sample data
-      final isCompleted = (index % 3 == 0) || (index >= 145); // 1/3 of days + last 2
+      final isCompleted =
+          (index % 3 == 0) || (index >= 145); // 1/3 of days + last 2
       return DailyProgress(
         habitId: 1,
         date: DateTime.now().subtract(Duration(days: 146 - index)),
@@ -25,7 +26,8 @@ class _TrackerscreenState extends State<Trackerscreen> {
 
     final sampleDailyProgress2 = List.generate(147, (index) {
       // Different pattern for second habit
-      final isCompleted = (index % 4 == 0) || (index == 146); // 1/4 of days + last day
+      final isCompleted =
+          (index % 4 == 0) || (index == 146); // 1/4 of days + last day
       return DailyProgress(
         habitId: 2,
         date: DateTime.now().subtract(Duration(days: 146 - index)),
@@ -133,7 +135,8 @@ class _HabitCardState extends State<HabitCard> {
 
     // Check if today is completed (last item in the list)
     final isTodayCompleted =
-        widget.dailyProgress.isNotEmpty && widget.dailyProgress.last.isCompleted;
+        widget.dailyProgress.isNotEmpty &&
+        widget.dailyProgress.last.isCompleted;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -235,7 +238,8 @@ class _HabitCardState extends State<HabitCard> {
             itemBuilder: (context, index) {
               final dayData = widget.dailyProgress[index];
               final today = DateTime.now();
-              final isCurrentDay = dayData.date.year == today.year &&
+              final isCurrentDay =
+                  dayData.date.year == today.year &&
                   dayData.date.month == today.month &&
                   dayData.date.day == today.day;
 
@@ -248,10 +252,7 @@ class _HabitCardState extends State<HabitCard> {
                         : AppColors.border,
                     shape: BoxShape.circle,
                     border: isCurrentDay
-                        ? Border.all(
-                            color: AppColors.textPrimary,
-                            width: 2,
-                          )
+                        ? Border.all(color: AppColors.textPrimary, width: 2)
                         : null,
                   ),
                 ),
