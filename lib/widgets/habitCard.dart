@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:steady/utils/iconData.dart';
 import '../models/habit.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../theme/appColor.dart';
-
+import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'dart:async';
 
 class HabitCircleWidget extends StatefulWidget {
   final Habit habit;
@@ -13,113 +13,87 @@ class HabitCircleWidget extends StatefulWidget {
   State<HabitCircleWidget> createState() => _HabitCircleWidgetState();
 }
 
-class _HabitCircleWidgetState extends State<HabitCircleWidget> with SingleTickerProviderStateMixin {
+class _HabitCircleWidgetState extends State<HabitCircleWidget> {
   double size = 130;
   int currentStep = 0; 
-  late AnimationController _controller;
   double progress = 0.0; 
+  Timer? _timer;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 1), 
-    )..addListener(() {
-        setState(() {
-          progress = _controller.value;
-        });
-      });
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+  void _startHold() {
+    // only allow next step if not finished all steps
+    if (currentStep >= widget.habit.timePerDay) return;
+    if (_timer != null && _timer!.isActive) return;
 
-        _controller.reset();
-        setState(() {
-          currentStep++;
+    const stepDuration = Duration(milliseconds: 16);
+    double increment = 16 / 1000; // 16ms / 1000ms = fraction per tick (~1s total)
+
+    _timer = Timer.periodic(stepDuration, (_) {
+      setState(() {
+        progress += increment;
+
+        
+        if (progress >= 1.0) {
           progress = 0.0;
-        });
-      }
+          currentStep++;
+          _timer?.cancel(); 
+        }
+      });
+    });
+  }
+
+  void _stopHold() {
+    _timer?.cancel();
+    setState(() {
+      progress = 0.0; 
     });
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onLongPressStart(LongPressStartDetails details) {
-    if (currentStep < widget.habit.timePerDay) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  void _onLongPressEnd(LongPressEndDetails details) {
-    if (_controller.isAnimating) {
-      _controller.stop();
-      _controller.reset();
-      setState(() {
-        progress = 0.0;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    double totalProgress = (currentStep / widget.habit.timePerDay) + (progress / widget.habit.timePerDay);
+    int maxSteps = widget.habit.timePerDay;
+    double totalProgress =
+        (currentStep / maxSteps) + (progress / maxSteps);
 
     return Column(
       children: [
         GestureDetector(
-          onLongPressStart: _onLongPressStart,
-          onLongPressEnd: _onLongPressEnd,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-
-              Container(
-                width: size+10,
-                height: size+10,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.offNav, width: 8),
+          onLongPressStart: (_) => _startHold(),
+          onLongPressEnd: (_) => _stopHold(),
+          child: CircularPercentIndicator(
+            radius: size / 2,
+            lineWidth: 8,
+            percent: totalProgress.clamp(0.0, 1.0),
+            circularStrokeCap: CircularStrokeCap.round,
+            backgroundColor: AppColors.offNav,
+            progressColor: AppColors.primary,
+            center: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  iconMap[widget.habit.iconName] ?? Icons.help,
+                  size: 50,
+                  color: AppColors.textPrimary,
                 ),
-              ),
-
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircularProgressIndicator(
-                  value: totalProgress.clamp(0.0, 1.0),
-                  strokeWidth: 8,
-                  color: AppColors.primary,
-                  backgroundColor: Colors.transparent,
+                SizedBox(height: 4),
+                Text(
+                  "$currentStep/$maxSteps",
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800),
                 ),
-              ),
-             
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    iconMap[widget.habit.iconName],
-                    size: 50,
-                    color: AppColors.textPrimary,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "$currentStep/${widget.habit.timePerDay}",
-                    style: TextStyle(color: AppColors.textPrimary,fontWeight: FontWeight.w800),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         SizedBox(height: 8),
         Text(
-          widget.habit.title,
+          widget.habit.title ?? "Habit",
           style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 20,
