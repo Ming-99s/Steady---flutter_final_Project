@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:steady/screens/tab/TrackerScreen.dart';
-import 'package:steady/screens/tab/addScreen.dart';
 import 'package:steady/screens/tab/setting.dart';
 import 'package:steady/theme/appColor.dart';
 import '../utils/enums.dart';
@@ -22,7 +21,7 @@ class _HomeState extends State<Home> {
       backgroundColor: AppColors.secondary,
       body: IndexedStack(
         index: currentTab.index,
-        children: [Homescreen(), AddHabitScreen(), Trackerscreen(), Setting()],
+        children: [Homescreen(), Trackerscreen(), Setting()],
       ),
 
       bottomNavigationBar: Container(
@@ -61,10 +60,6 @@ class _HomeState extends State<Home> {
                 BottomNavigationBarItem(
                   icon: Icon(LineAwesomeIcons.building),
                   label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(LineAwesomeIcons.plus_solid),
-                  label: 'Add',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(LineAwesomeIcons.history_solid),
