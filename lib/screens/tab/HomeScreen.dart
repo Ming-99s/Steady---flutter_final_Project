@@ -1,9 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:steady/theme/appColor.dart';
+import '../../widgets/habitCard.dart';
+import '../../models/habit.dart';
+import '../../repository/habits_repository.dart';
 
-class Homescreen extends StatelessWidget {
+class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
+
+  @override
+  State<Homescreen> createState() => _HomescreenState();
+}
+
+class _HomescreenState extends State<Homescreen> {
+  List<Habit> habits = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadHabits();
+  }
+
+  Future<void> loadHabits() async {
+    final repo = HabitRepository();
+    final loadedHabits = await repo.loadHabits();
+    setState(() {
+      habits = loadedHabits;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,45 +61,21 @@ class Homescreen extends StatelessWidget {
                         Text(
                           'Habits',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.textPrimary,
                             fontWeight: FontWeight.w800,
                             fontSize: 30,
                           ),
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: AppColors.border,
-                        border: Border.all(color: AppColors.offNav, width: 0.5),
-                      ),
-                      child: Row(
-                        children: const [
-                          Icon(
-                            LineAwesomeIcons.cocktail_solid,
-                            color: AppColors.primary,
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            'Tokens: ',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                          Text(
-                            '3/5',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ],
-                      ),
-                    ),
+                    Icon(LineAwesomeIcons.plus_solid,size: 30,fontWeight: FontWeight.w900,)
                   ],
                 ),
 
-                Text('Low energy is okay. Start small today.', style: TextStyle(color: AppColors.primary),)
+                Text(
+                  'Low energy is okay. Start small today.',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
               ],
             ),
           ),
@@ -84,9 +84,18 @@ class Homescreen extends StatelessWidget {
           Expanded(
             child: Container(
               color: AppColors.background,
-              // child: ListView.builder(
-              //   itemBuilder: itemBuilder
-              // ),
+              child: GridView.builder(
+                padding: EdgeInsets.only(top: 20),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 items per row
+                  mainAxisSpacing:2,
+                  crossAxisSpacing: 10,
+                ),
+                itemCount: habits.length,
+                itemBuilder: (context, index) {
+                  return HabitCircleWidget(habit: habits[index],);
+                },
+              ),
             ),
           ),
         ],
