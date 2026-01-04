@@ -14,6 +14,8 @@ enum Day {
   const Day(this.label);
 }
 
+enum Schedule { everyday, weekend, specificDay }
+
 enum MoodType {
   motivate(image: 'motivate.png', title: 'Motivation'),
   normal(image: 'okay.png', title: 'Okay'),
