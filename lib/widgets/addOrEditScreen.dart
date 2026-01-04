@@ -6,10 +6,13 @@ import '../utils/iconData.dart';
 import '../utils/enums.dart';
 import '../utils/helper.dart';
 import '../widgets/selectIcon.dart';
-import '../repository/habitGlobal.dart'; // ← Global habitRepo
+import '../repository/habitGlobal.dart'; // Global habitRepo
+import '../models/habit.dart';
 
 class AddHabitScreen extends StatefulWidget {
-  const AddHabitScreen({super.key});
+  const AddHabitScreen({super.key, this.existingHabit});
+
+  final Habit? existingHabit;
 
   @override
   State<AddHabitScreen> createState() => _AddHabitScreenState();
@@ -26,11 +29,37 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   Set<String> _selectedDays = {};
   String? _selectedIconKey;
 
+  final List<String> _daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  bool get isEditMode => widget.existingHabit != null;
+
   IconData get _currentIcon => _selectedIconKey != null
       ? iconMap[_selectedIconKey]!
       : LineAwesomeIcons.question_circle_solid;
 
-  final List<String> _daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  @override
+  void initState() {
+    super.initState();
+
+    if (isEditMode) {
+      final habit = widget.existingHabit!;
+      _titleController.text = habit.title;
+      _descriptionController.text = habit.description ?? '';
+      _timePerDayController.text = habit.timePerDay.toString();
+      _selectedDate = habit.startDate;
+      _selectedLoop = getScheduleType(habit.schedule); // Convert list to enum
+      _selectedDays = habit.schedule.map((d) => dayAbbr(d)).toSet();
+      _selectedIconKey = habit.iconName;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _timePerDayController.dispose();
+    super.dispose();
+  }
 
   String _getMonthName(int month) {
     const months = [
@@ -67,7 +96,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     );
   }
 
-  Future<void> _createAndSaveHabit() async {
+  Future<void> _createOrUpdateHabit() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedLoop == Schedule.specificDay && _selectedDays.isEmpty) {
@@ -82,6 +111,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     }
 
     List<Day> scheduleDays = [];
+
     if (_selectedLoop == Schedule.everyday) {
       scheduleDays = Day.values;
     } else if (_selectedLoop == Schedule.weekend) {
@@ -92,24 +122,41 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         return Day.values.firstWhere((d) => d.name.startsWith(lower));
       }).toList();
     }
+    final scheduleInts = scheduleDays.map((d) => d.index).toList();
 
     try {
-      await habitRepo.createHabit(
-        
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isNotEmpty
-            ? _descriptionController.text.trim()
-            : null,
-        timePerDay: timePerDay,
-        iconName: _selectedIconKey ?? 'question_circle',
-        schedule: scheduleDays,
-        startDate: _selectedDate,
-      );
+      if (isEditMode) {
+  final updatedHabit = Habit(
+    habitId: widget.existingHabit!.habitId, // keep the same ID
+    title: _titleController.text.trim(),
+    description: _descriptionController.text.trim().isNotEmpty
+        ? _descriptionController.text.trim()
+        : null,
+    timePerDay: timePerDay,
+    iconName: _selectedIconKey ?? 'question_circle',
+    scheduleIndices: scheduleInts,
+    startDate: _selectedDate,
 
-      if (mounted) {
+  );
+
+  await habitRepo.updateHabit(updatedHabit);
+  _showSnackBar("Habit updated successfully!");
+} 
+else {
+        await habitRepo.createHabit(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isNotEmpty
+              ? _descriptionController.text.trim()
+              : null,
+          timePerDay: timePerDay,
+          iconName: _selectedIconKey ?? 'question_circle',
+          schedule: scheduleDays,
+          startDate: _selectedDate,
+        );
         _showSnackBar("Habit created successfully!");
-        Navigator.pop(context);
       }
+
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         print(e);
@@ -122,14 +169,6 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _timePerDayController.dispose();
-    super.dispose();
   }
 
   @override
@@ -153,9 +192,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: _createAndSaveHabit,
+                  onPressed: _createOrUpdateHabit,
                   child: Text(
-                    "Add",
+                    isEditMode ? "Save" : "Add",
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -176,7 +215,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "New Habit",
+                        isEditMode ? "Edit Habit" : "New Habit",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -195,6 +234,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         ),
                       ),
                       const SizedBox(height: 5),
+
+                      // Info Container
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -221,10 +262,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                   ? "Please enter a habit title"
                                   : null,
                             ),
-                            Divider(
-                              height: 20,
-                              color: AppColors.getBorder(context),
-                            ),
+                            Divider(height: 20, color: AppColors.getBorder(context)),
+
                             // Description
                             TextField(
                               controller: _descriptionController,
@@ -240,11 +279,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                 color: AppColors.getTextPrimary(context),
                               ),
                             ),
-                            Divider(
-                              height: 20,
-                              color: AppColors.getBorder(context),
-                            ),
-                            // Time per Day
+                            Divider(height: 20, color: AppColors.getBorder(context)),
+
+                            // Time per day
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -283,10 +320,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                 ),
                               ],
                             ),
-                            Divider(
-                              height: 20,
-                              color: AppColors.getBorder(context),
-                            ),
+                            Divider(height: 20, color: AppColors.getBorder(context)),
+
                             // Start Date
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -306,7 +341,6 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                       firstDate: DateTime.now(),
                                       lastDate: DateTime(2100),
                                       builder: (context, child) {
-                                        // Dark/light theme support
                                         return Theme(
                                           data: Theme.of(context).brightness == Brightness.dark
                                               ? ThemeData.dark()
@@ -350,6 +384,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         ),
                       ),
                       const SizedBox(height: 5),
+
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
@@ -379,10 +414,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                   });
                                 }
                               },
-                              items: Schedule.values.map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(scheduleLabel(e)),
-                              )).toList(),
+                              items: Schedule.values
+                                  .map((e) => DropdownMenuItem(value: e, child: Text(scheduleLabel(e))))
+                                  .toList(),
                             ),
                           ],
                         ),
@@ -429,6 +463,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         ),
                       ),
                       const SizedBox(height: 5),
+
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
@@ -454,7 +489,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                                   ),
-                                  builder: (_) => IconSelectionBottomSheet(selectedKey: _selectedIconKey),
+                                  builder: (_) =>
+                                      IconSelectionBottomSheet(selectedKey: _selectedIconKey),
                                 );
                                 if (result != null) setState(() => _selectedIconKey = result);
                               },
