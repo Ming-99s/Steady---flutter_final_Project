@@ -11,7 +11,7 @@ class Setting extends StatelessWidget {
     return SafeArea(
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
           color: AppColors.getSecondary(context), // background like appbar
           boxShadow: [
