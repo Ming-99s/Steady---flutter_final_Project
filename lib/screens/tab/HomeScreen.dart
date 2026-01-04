@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:steady/theme/appColor.dart';
+import 'package:steady/widgets/addScreen.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
 import '../../repository/habits_repository.dart';
@@ -68,7 +69,27 @@ class _HomescreenState extends State<Homescreen> {
                         ),
                       ],
                     ),
-                    Icon(LineAwesomeIcons.plus_solid,size: 30,fontWeight: FontWeight.w900,)
+                    // Icon(LineAwesomeIcons.plus_solid,size: 30,fontWeight: FontWeight.w900,)
+                    IconButton(
+                      icon: Icon(
+                        LineAwesomeIcons.plus_solid,
+                        size: 30,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      onPressed: () => showModalBottomSheet(
+                        context: context,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(10),
+                          ),
+                        ),
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        builder: (BuildContext context) {
+                          return AddHabitScreen();
+                        },
+                      ),
+                    ),
                   ],
                 ),
 
@@ -88,12 +109,12 @@ class _HomescreenState extends State<Homescreen> {
                 padding: EdgeInsets.only(top: 20),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2, // 2 items per row
-                  mainAxisSpacing:2,
+                  mainAxisSpacing: 2,
                   crossAxisSpacing: 10,
                 ),
                 itemCount: habits.length,
                 itemBuilder: (context, index) {
-                  return HabitCircleWidget(habit: habits[index],);
+                  return HabitCircleWidget(habit: habits[index]);
                 },
               ),
             ),
