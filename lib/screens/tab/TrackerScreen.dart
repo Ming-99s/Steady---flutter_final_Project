@@ -68,7 +68,7 @@ class Trackerscreen extends StatelessWidget {
                   children: habits.map((habit) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 24),
-                      child: Habitprogress(habit: habit),
+                      child: HabitProgress(habit: habit),
                     );
                   }).toList(),
                 ),

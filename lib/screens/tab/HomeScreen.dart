@@ -4,7 +4,6 @@ import 'package:steady/theme/appColor.dart';
 import 'package:steady/widgets/addScreen.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
-import '../../repository/daily_progress_repository.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key, required this.habits});
@@ -91,15 +90,20 @@ class _HomescreenState extends State<Homescreen> {
             child: Container(
               color: AppColors.getBackground(context),
               child: GridView.builder(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.all(20),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 items per row
-                  mainAxisSpacing: 2,
-                  crossAxisSpacing: 10,
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 20,
+                  crossAxisSpacing: 20,
+                  childAspectRatio: 0.85, // adjust height/width ratio
                 ),
                 itemCount: widget.habits.length,
                 itemBuilder: (context, index) {
-                  return HabitCircleWidget(habit: widget.habits[index]);
+                  final habit = widget.habits[index];
+                  return HabitCircleWidget(
+                    key: ValueKey(habit.habitId),
+                    habit: habit,
+                  );
                 },
               ),
             ),

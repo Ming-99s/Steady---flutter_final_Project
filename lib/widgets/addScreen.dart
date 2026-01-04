@@ -95,6 +95,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
     try {
       await habitRepo.createHabit(
+        
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim().isNotEmpty
             ? _descriptionController.text.trim()
