@@ -58,12 +58,7 @@ class _HomeState extends State<Home> {
         ),
         child: Material(
           type: MaterialType.transparency,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              splashFactory: NoSplash.splashFactory, // removes ripple
-              highlightColor: Colors.transparent, // removes highlight
-            ),
-            child: BottomNavigationBar(
+          child:  BottomNavigationBar(
               enableFeedback: false,
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -93,7 +88,7 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
-      ),
+      
     );
   }
 }

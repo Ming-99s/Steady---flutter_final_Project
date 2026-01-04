@@ -21,7 +21,6 @@ class _HomescreenState extends State<Homescreen> {
     return SafeArea(
       child: Column(
         children: [
-          // Top bar-like section
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
