@@ -48,10 +48,10 @@ class _HabitprogressState extends State<Habitprogress> {
 
   Color _getCellColor(int completed) {
     final target = widget.habit.timePerDay;
-    if (completed == 0 || target <= 0) return AppColors.border;
+    if (completed == 0 || target <= 0) return AppColors.getBorder(context);
 
     final ratio = completed / target;
-    return AppColors.textSecondary.withOpacity(ratio.clamp(0.2, 0.9));
+    return AppColors.getTextSecondary(context).withOpacity(ratio.clamp(0.2, 0.9));
   }
 
   @override
@@ -109,12 +109,12 @@ class _HabitprogressState extends State<Habitprogress> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: AppColors.getSecondary(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.getBorder(context)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.border.withOpacity(0.3),
+            color: AppColors.getBorder(context).withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -129,12 +129,12 @@ class _HabitprogressState extends State<Habitprogress> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: AppColors.getBorder(context),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   iconMap[widget.habit.iconName] ?? Icons.help_outline,
-                  color: AppColors.primary,
+                  color: AppColors.getPrimary(context),
                   size: 28,
                 ),
               ),
@@ -145,8 +145,8 @@ class _HabitprogressState extends State<Habitprogress> {
                   children: [
                     Text(
                       widget.habit.title,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
+                      style: TextStyle(
+                        color: AppColors.getTextPrimary(context),
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -154,7 +154,7 @@ class _HabitprogressState extends State<Habitprogress> {
                     if (widget.habit.description?.isNotEmpty == true)
                       Text(
                         widget.habit.description!,
-                        style: const TextStyle(color: AppColors.offNav, fontSize: 14),
+                        style: TextStyle(color: AppColors.offNav, fontSize: 14),
                       ),
                   ],
                 ),
@@ -164,7 +164,7 @@ class _HabitprogressState extends State<Habitprogress> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isTodayCompleted ? AppColors.textSecondary : AppColors.border,
+                      color: isTodayCompleted ? AppColors.textPrimary : AppColors.border,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -178,8 +178,8 @@ class _HabitprogressState extends State<Habitprogress> {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         '$completionCount total',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(context),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -206,7 +206,7 @@ class _HabitprogressState extends State<Habitprogress> {
                       alignment: Alignment.centerRight,
                       child: Text(
                         days[i],
-                        style: const TextStyle(fontSize: 10, color: AppColors.offNav),
+                        style: TextStyle(fontSize: 10, color: AppColors.offNav),
                       ),
                     ),
                   );
@@ -241,7 +241,7 @@ class _HabitprogressState extends State<Habitprogress> {
                                     color: date == null ? Colors.transparent : _getCellColor(completed),
                                     borderRadius: BorderRadius.circular(4),
                                     border: isToday
-                                        ? Border.all(color: AppColors.textPrimary, width: 1.5)
+                                        ? Border.all(color: AppColors.getTextPrimary(context), width: 1.5)
                                         : null,
                                   ),
                                 );
@@ -284,7 +284,7 @@ class _HabitprogressState extends State<Habitprogress> {
                               child: label != null
                                   ? Text(
                                       label,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 10,
                                         color: AppColors.offNav,
                                       ),
