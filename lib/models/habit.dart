@@ -1,47 +1,65 @@
-import 'package:flutter/material.dart';
+// models/habit.dart
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../utils/enums.dart';
 
-class Habit {
+part 'habit.g.dart';
+
+@HiveType(typeId : 0)
+class Habit extends HiveObject {
+  @HiveField(0)
   final String habitId;
+
+  @HiveField(1)
   final String title;
+
+  @HiveField(2)
   final String? description;
+
+  @HiveField(3)
   final int timePerDay;
+
+  @HiveField(4)
   final String iconName;
-  final List<Day> schedule;
+
+  @HiveField(5)
+  final List<int> scheduleIndices;
+
+  @HiveField(6)
   final DateTime startDate;
 
+  // Regular constructor for Hive (all fields required)
   Habit({
     required this.habitId,
     required this.title,
     this.description,
     required this.timePerDay,
     required this.iconName,
-    required this.schedule,
+    required this.scheduleIndices,
     required this.startDate,
   });
 
-  factory Habit.fromJson(Map<String, dynamic> json) {
+  // Factory for easy creation (with List<Day> and auto UUID)
+  factory Habit.create({
+    String? habitId,
+    required String title,
+    String? description,
+    required int timePerDay,
+    required String iconName,
+    required List<Day> schedule,
+    required DateTime startDate,
+  }) {
     return Habit(
-      habitId: json['habitId'],
-      title: json['title'],
-      description: json['description'],
-      timePerDay: json['timePerDay'],
-      iconName: json['iconName'],
-      schedule: (json['schedule'] as List).map((i) => Day.values[i]).toList(),
-      startDate: DateTime.parse(json['startDate']),
+      habitId: habitId ?? const Uuid().v4(),
+      title: title,
+      description: description,
+      timePerDay: timePerDay,
+      iconName: iconName,
+      scheduleIndices: schedule.map((day) => day.index).toList(),
+      startDate: startDate,
     );
   }
 
-  // Convert to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'habitId': habitId,
-      'title': title,
-      'description': description,
-      'timePerDay': timePerDay,
-      'iconName': iconName,
-      'schedule': schedule.map((d) => d.index).toList(),
-      'startDate': startDate.toIso8601String(),
-    };
-  }
+  // Helper to get real schedule
+  List<Day> get schedule => scheduleIndices.map((i) => Day.values[i]).toList();
 }

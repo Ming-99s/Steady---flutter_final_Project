@@ -6,12 +6,15 @@ import './utils/app_pref.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './models/dialyProgress.dart';
+import './models/habit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final isFirstLaunch = await AppPrefs.isFirstLaunch();
   final isMoodDoneToday = await AppPrefs.isMoodCompletedToday();
   await Hive.initFlutter();
+  Hive.registerAdapter(HabitAdapter());
   Hive.registerAdapter(DailyProgressAdapter());
+  await Hive.openBox<Habit>('habits');
   await Hive.openBox<DailyProgress>('daily_progress');
 
   runApp(
@@ -43,7 +46,7 @@ class Steady extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: 'Inter', // Matches the 'family' name in pubspec.yaml
+        fontFamily: 'Inter', 
       ),
       debugShowCheckedModeBanner: false,
       home: Scaffold(body: startPage),

@@ -4,7 +4,6 @@ import 'package:steady/theme/appColor.dart';
 import 'package:steady/widgets/addScreen.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
-import '../../repository/habits_repository.dart';
 import '../../repository/daily_progress_repository.dart';
 
 class Homescreen extends StatefulWidget {

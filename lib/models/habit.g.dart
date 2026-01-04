@@ -1,41 +1,50 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'dialyProgress.dart';
+part of 'habit.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class DailyProgressAdapter extends TypeAdapter<DailyProgress> {
+class HabitAdapter extends TypeAdapter<Habit> {
   @override
-  final int typeId = 1;
+  final int typeId = 0;
 
   @override
-  DailyProgress read(BinaryReader reader) {
+  Habit read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return DailyProgress(
+    return Habit(
       habitId: fields[0] as String,
-      date: fields[1] as DateTime,
-      completedUnits: fields[2] as int,
-      isCompleted: fields[3] as bool,
+      title: fields[1] as String,
+      description: fields[2] as String?,
+      timePerDay: fields[3] as int,
+      iconName: fields[4] as String,
+      scheduleIndices: (fields[5] as List).cast<int>(),
+      startDate: fields[6] as DateTime,
     );
   }
 
   @override
-  void write(BinaryWriter writer, DailyProgress obj) {
+  void write(BinaryWriter writer, Habit obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.habitId)
       ..writeByte(1)
-      ..write(obj.date)
+      ..write(obj.title)
       ..writeByte(2)
-      ..write(obj.completedUnits)
+      ..write(obj.description)
       ..writeByte(3)
-      ..write(obj.isCompleted);
+      ..write(obj.timePerDay)
+      ..writeByte(4)
+      ..write(obj.iconName)
+      ..writeByte(5)
+      ..write(obj.scheduleIndices)
+      ..writeByte(6)
+      ..write(obj.startDate);
   }
 
   @override
@@ -44,7 +53,7 @@ class DailyProgressAdapter extends TypeAdapter<DailyProgress> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DailyProgressAdapter &&
+      other is HabitAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
