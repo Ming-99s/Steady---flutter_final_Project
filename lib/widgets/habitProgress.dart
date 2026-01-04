@@ -5,106 +5,117 @@ import '../models/habit.dart';
 import '../repository/repoDialyGlobal.dart';
 import '../theme/appColor.dart';
 
-class Habitprogress extends StatefulWidget {
+class HabitProgress extends StatefulWidget {
   final Habit habit;
-
-  const Habitprogress({super.key, required this.habit});
+  const HabitProgress({super.key, required this.habit});
 
   @override
-  State<Habitprogress> createState() => _HabitprogressState();
+  State<HabitProgress> createState() => _HabitProgressState();
 }
 
-class _HabitprogressState extends State<Habitprogress> {
+class _HabitProgressState extends State<HabitProgress> {
   final repo = dailyProgressRepo;
-  Map<DateTime, int> _progressMap = {};
+  final Map<DateTime, int> _progressMap = {};
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _loadProgress();
+    repo.addListener(_loadProgress);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadProgress();
-      repo.addListener(_loadProgress);
+      _scrollToToday();
     });
   }
 
   @override
   void dispose() {
     repo.removeListener(_loadProgress);
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _loadProgress() {
     final all = repo.getAllForHabit(widget.habit.habitId);
-    final map = <DateTime, int>{};
-
-    for (var p in all) {
-      final d = DateTime(p.date.year, p.date.month, p.date.day);
-      map[d] = p.completedUnits;
+    _progressMap.clear();
+    for (final p in all) {
+      final key = DateTime(p.date.year, p.date.month, p.date.day);
+      _progressMap[key] = p.completedUnits;
     }
-
-    if (!mounted) return;
-    setState(() => _progressMap = map);
+    if (mounted) setState(() {});
   }
 
-  Color _getCellColor(int completed) {
-    final target = widget.habit.timePerDay;
-    if (completed == 0 || target <= 0) return AppColors.border;
+  void _scrollToToday() {
+    const double cellWidth = 16 + 6; // cell + spacing
+    DateTime today = DateTime.now();
+    DateTime startDate = today.subtract(const Duration(days: 365));
+    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+    int weekIndex = ((today.difference(firstMonday).inDays) / 7).floor();
+    double offset = weekIndex * cellWidth;
+    if (_scrollController.hasClients) _scrollController.jumpTo(offset);
+  }
 
-    final ratio = completed / target;
-    return AppColors.textSecondary.withOpacity(ratio.clamp(0.2, 0.9));
+  Color _cellColor(DateTime date) {
+    final today = DateTime.now();
+    final todayKey = DateTime(today.year, today.month, today.day);
+
+    if (date.isAfter(todayKey)) return Colors.transparent;
+
+    final habitStart = DateTime(widget.habit.startDate.year,
+        widget.habit.startDate.month, widget.habit.startDate.day);
+    if (date.isBefore(habitStart)) return AppColors.border;
+
+    final completed = _progressMap[date] ?? 0;
+
+    if (completed == 0) return AppColors.border;
+    if (completed < widget.habit.timePerDay / 2) return const Color(0xFF90CAF9);
+
+    return AppColors.textSecondary;
+  }
+
+  bool _isCompleted(DateTime date) {
+    final completed = _progressMap[date] ?? 0;
+    return completed >= widget.habit.timePerDay;
   }
 
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final todayNormalized = DateTime(today.year, today.month, today.day);
-    final startDate = DateTime(
-      widget.habit.startDate.year,
-      widget.habit.startDate.month,
-      widget.habit.startDate.day,
-    );
+    final todayKey = DateTime(today.year, today.month, today.day);
 
-    // If habit started today or in future, show just today
-    if (startDate.isAfter(todayNormalized)) {
-      // You can return a simple "Not started yet" message or empty grid
-      return const SizedBox.shrink();
+    DateTime startDate = today.subtract(const Duration(days: 365));
+    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+
+    const int weekCount = 54;
+    final List<List<DateTime>> weeks = [];
+    DateTime cursor = firstMonday;
+
+    for (int i = 0; i < weekCount; i++) {
+      final week = List.generate(7, (d) => cursor.add(Duration(days: d)));
+      weeks.add(week);
+      cursor = cursor.add(const Duration(days: 7));
     }
 
-    // Find Monday of the week containing startDate
-    final int startWeekday = startDate.weekday; // 1=Monday, 7=Sunday
-    final DateTime firstMonday = startDate.subtract(Duration(days: startWeekday - 1));
-
-    // Generate weeks: oldest → newest
-    final List<List<DateTime?>> weeks = [];
-    DateTime currentMonday = firstMonday;
-
-    while (true) {
-      final week = List<DateTime?>.generate(7, (i) {
-        final day = currentMonday.add(Duration(days: i));
-        // Include only days from startDate to today (inclusive)
-        if (day.isBefore(startDate) || day.isAfter(todayNormalized)) {
-          return null;
-        }
-        return day;
-      });
-
-      // Add week only if it has at least one valid day
-      if (week.any((d) => d != null)) {
-        weeks.add(week);
+    // Month labels
+    final List<Widget> monthLabels = [];
+    String? lastMonth;
+    for (final week in weeks) {
+      final firstDayOfWeek = week.first;
+      final monthName = DateFormat.MMM().format(firstDayOfWeek);
+      if (monthName != lastMonth && firstDayOfWeek.day <= 7) {
+        monthLabels.add(SizedBox(
+          width: 22,
+          child: Text(
+            monthName,
+            style: const TextStyle(fontSize: 10, color: AppColors.offNav),
+          ),
+        ));
+        lastMonth = monthName;
       } else {
-        break; // No more days to show
+        monthLabels.add(const SizedBox(width: 22));
       }
-
-      currentMonday = currentMonday.add(const Duration(days: 7));
     }
-
-    // Stats
-    final int completionCount = _progressMap.values
-        .where((v) => v >= widget.habit.timePerDay)
-        .length;
-
-    final bool isTodayCompleted =
-        (_progressMap[todayNormalized] ?? 0) >= widget.habit.timePerDay;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -112,18 +123,11 @@ class _HabitprogressState extends State<Habitprogress> {
         color: AppColors.secondary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.border.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // HEADER: icon, title, tick if today completed
           Row(
             children: [
               Container(
@@ -135,165 +139,125 @@ class _HabitprogressState extends State<Habitprogress> {
                 child: Icon(
                   iconMap[widget.habit.iconName] ?? Icons.help_outline,
                   color: AppColors.primary,
-                  size: 28,
+                  size: 26,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      widget.habit.title,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.habit.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          if (widget.habit.description?.isNotEmpty == true)
+                            Text(
+                              widget.habit.description!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.offNav,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    if (widget.habit.description?.isNotEmpty == true)
-                      Text(
-                        widget.habit.description!,
-                        style: const TextStyle(color: AppColors.offNav, fontSize: 14),
+                      Container(
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isCompleted(todayKey) ? AppColors.darkPrimary : AppColors.border
+                        ),
+                        child:  _isCompleted(todayKey) ? Icon(Icons.check,
+                            color: AppColors.secondary, size: 20) : Icon(Icons.task,
+                            color: AppColors.secondary, size: 20),
                       ),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isTodayCompleted ? AppColors.textSecondary : AppColors.border,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isTodayCompleted ? Icons.check : Icons.priority_high,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  if (completionCount > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        '$completionCount total',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
             ],
           ),
+          const SizedBox(height: 18),
 
-          const SizedBox(height: 24),
-
-          // Heatmap Grid
+          // HEATMAP
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Day labels: Mon to Sun
+              // Day labels (Mon-Sun)
               Column(
-                children: List.generate(7, (i) {
-                  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                  return SizedBox(
-                    height: 20,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        days[i],
-                        style: const TextStyle(fontSize: 10, color: AppColors.offNav),
+                children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    .map(
+                      (day) => SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: Center(
+                          child: Text(
+                            day,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.offNav,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  );
-                }),
+                    )
+                    .toList(),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
 
-              // Scrollable heatmap + month labels
+              // Scrollable heatmap
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  reverse: true, // Today on the far right
+                  controller: _scrollController,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Grid cells
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: weeks.map((week) {
-                          return SizedBox(
-                            width: 20,
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
                             child: Column(
-                              children: List.generate(7, (dayIndex) {
-                                final date = week[dayIndex];
-                                final completed = date != null ? (_progressMap[date] ?? 0) : 0;
-                                final isToday = date != null && date.isAtSameMomentAs(todayNormalized);
+                              children: week.map((date) {
+                                final normalizedDate = DateTime(
+                                  date.year,
+                                  date.month,
+                                  date.day,
+                                );
+                                final isToday = normalizedDate == todayKey;
 
                                 return Container(
                                   width: 16,
                                   height: 16,
                                   margin: const EdgeInsets.symmetric(vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: date == null ? Colors.transparent : _getCellColor(completed),
+                                    color: _cellColor(normalizedDate),
                                     borderRadius: BorderRadius.circular(4),
                                     border: isToday
-                                        ? Border.all(color: AppColors.textPrimary, width: 1.5)
+                                        ? Border.all(
+                                            color: AppColors.textPrimary,
+                                            width: 1.5,
+                                          )
                                         : null,
                                   ),
                                 );
-                              }),
+                              }).toList(),
                             ),
                           );
                         }).toList(),
                       ),
-
                       const SizedBox(height: 8),
 
-                      // Month labels - perfectly aligned and centered
-                      Row(
-                        children: weeks.map((week) {
-                          final firstDay = week.firstWhere(
-                            (d) => d != null,
-                            orElse: () => null,
-                          );
-                          if (firstDay == null) return const SizedBox(width: 20);
-
-                          final weekIndex = weeks.indexOf(week);
-                          String? label;
-
-                          if (weekIndex == 0) {
-                            label = DateFormat.MMM().format(firstDay);
-                          } else {
-                            final prevFirst = weeks[weekIndex - 1].firstWhere(
-                              (d) => d != null,
-                              orElse: () => null,
-                            );
-                            if (prevFirst != null && firstDay.month != prevFirst.month) {
-                              label = DateFormat.MMM().format(firstDay);
-                            }
-                          }
-
-                          return SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: Center(
-                              child: label != null
-                                  ? Text(
-                                      label,
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        color: AppColors.offNav,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                      // Month labels below
+                      Row(children: monthLabels),
                     ],
                   ),
                 ),

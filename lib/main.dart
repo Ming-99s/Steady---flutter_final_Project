@@ -9,6 +9,8 @@ import 'package:device_preview/device_preview.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './models/dialyProgress.dart';
 import './models/habit.dart';
+// import './repository/habitGlobal.dart';
+// import './utils/enums.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final isFirstLaunch = await AppPrefs.isFirstLaunch();

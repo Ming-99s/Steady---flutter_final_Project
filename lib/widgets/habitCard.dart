@@ -28,13 +28,31 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
   void initState() {
     super.initState();
     _loadProgress();
+    repo.addListener(_loadProgress); // listen for repo changes
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    repo.removeListener(_loadProgress);
+    super.dispose();
   }
 
   Future<void> _loadProgress() async {
-    final progress = repo.getToday(widget.habit.habitId);
+    DateTime today = DateTime.now();
+    dailyProgress = repo.getToday(widget.habit.habitId);
+
+    // Create daily progress if missing
+    if (dailyProgress == null) {
+      dailyProgress = DailyProgress(
+        habitId: widget.habit.habitId,
+        date: today,
+      );
+      await repo.upsert(dailyProgress!);
+    }
+
     setState(() {
-      dailyProgress = progress;
-      currentStep = progress.completedUnits;
+      currentStep = dailyProgress!.completedUnits;
     });
   }
 
@@ -53,11 +71,20 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
         if (holdProgress >= 1.0) {
           holdProgress = 0.0;
           currentStep++;
-          _timer?.cancel();
+          if (currentStep > widget.habit.timePerDay) {
+            currentStep = widget.habit.timePerDay;
+          }
           _onStepCompleted();
+          _timer?.cancel(); // stop after completing 1 unit
         }
       });
     });
+  }
+
+  void _stopHold() {
+    // Just cancel timer and reset hold progress; do NOT increment step
+    _timer?.cancel();
+    setState(() => holdProgress = 0.0);
   }
 
   Future<void> _onStepCompleted() async {
@@ -70,22 +97,11 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
     await repo.upsert(dailyProgress!);
   }
 
-  void _stopHold() {
-    _timer?.cancel();
-    setState(() => holdProgress = 0.0);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    repo.removeListener(_loadProgress);
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     int maxSteps = widget.habit.timePerDay;
-    double totalProgress = (currentStep / maxSteps) + (holdProgress / maxSteps);
+    double totalProgress =
+        ((currentStep + holdProgress) / maxSteps).clamp(0.0, 1.0);
 
     return Column(
       children: [
@@ -100,7 +116,7 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
             child: CircularPercentIndicator(
               radius: size / 2,
               lineWidth: 8,
-              percent: totalProgress.clamp(0.0, 1.0),
+              percent: totalProgress,
               circularStrokeCap: CircularStrokeCap.round,
               backgroundColor: AppColors.offNav,
               progressColor: AppColors.primary,
