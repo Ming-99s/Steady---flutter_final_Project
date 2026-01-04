@@ -45,13 +45,19 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isSelected ? AppColors.primary : AppColors.background,
+          color: isSelected
+              ? AppColors.getPrimary(context)
+              : AppColors.getBackground(context),
         ),
         child: Text(
           day,
           style: TextStyle(
             fontSize: 10,
-            color: isSelected ? AppColors.secondary : AppColors.textPrimary,
+            color: isSelected
+                ? (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : AppColors.secondary)
+                : AppColors.getTextPrimary(context),
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -327,8 +333,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

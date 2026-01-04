@@ -42,12 +42,12 @@ class _HomeState extends State<Home> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(
-          color: AppColors.secondary,
+          color: AppColors.getSecondary(context),
           boxShadow: [
             BoxShadow(
               color: Color.fromARGB(44, 0, 0, 0),
               blurRadius: 10,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
             ),
           ],
         ),
