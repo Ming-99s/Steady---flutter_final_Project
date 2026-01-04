@@ -64,6 +64,7 @@ class _HomescreenState extends State<Homescreen> {
                       ),
                       onPressed: () => showModalBottomSheet(
                         context: context,
+                        backgroundColor: AppColors.background,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(10),

@@ -92,27 +92,33 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
         GestureDetector(
           onLongPressStart: (_) => _startHold(),
           onLongPressEnd: (_) => _stopHold(),
-          child: CircularPercentIndicator(
-            radius: size / 2,
-            lineWidth: 8,
-            percent: totalProgress.clamp(0.0, 1.0),
-            circularStrokeCap: CircularStrokeCap.round,
-            backgroundColor: AppColors.offNav,
-            progressColor: AppColors.primary,
-            center: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  iconMap[widget.habit.iconName] ?? Icons.help,
-                  size: 50,
-                  color: AppColors.textPrimary,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "$currentStep/$maxSteps",
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ],
+          child: Container(
+            decoration: BoxDecoration(
+            color: AppColors.secondary,
+              shape: BoxShape.circle
+            ),
+            child: CircularPercentIndicator(
+              radius: size / 2,
+              lineWidth: 8,
+              percent: totalProgress.clamp(0.0, 1.0),
+              circularStrokeCap: CircularStrokeCap.round,
+              backgroundColor: AppColors.offNav,
+              progressColor: AppColors.primary,
+              center: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    iconMap[widget.habit.iconName] ?? Icons.help,
+                    size: 50,
+                    color: AppColors.textPrimary,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "$currentStep/$maxSteps",
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:steady/utils/iconData.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'package:steady/theme/appColor.dart';
+import '../utils/iconData.dart';
+import './selectIcon.dart';
 import '../utils/enums.dart';
+import '../utils/helper.dart';
 
 class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key});
@@ -12,11 +16,26 @@ class AddHabitScreen extends StatefulWidget {
 class _AddHabitScreenState extends State<AddHabitScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
-  TrackTheme _selectedTheme = TrackTheme.blue;
-  String _selectedLoop = 'Daily';
 
+  DateTime _selectedDate = DateTime.now();
+  Schedule _selectedLoop = Schedule.everyday;
   Set<String> _selectedDays = {};
+  String? _selectedIconKey;
+
+  IconData get _currentIcon => _selectedIconKey != null
+      ? iconMap[_selectedIconKey]!
+      : LineAwesomeIcons.question_circle_solid;
+
+  final List<String> _daysOfWeek = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+
   String _getMonthName(int month) {
     const months = [
       'Jan',
@@ -37,8 +56,8 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
 
   Widget _buildDayButton(String day) {
     final isSelected = _selectedDays.contains(day);
-    return TextButton(
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
         setState(() {
           if (isSelected) {
             _selectedDays.remove(day);
@@ -47,39 +66,19 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
           }
         });
       },
-      style: TextButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        backgroundColor: isSelected ? Colors.blue : Colors.transparent,
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      ),
-      child: Text(
-        day,
-        style: TextStyle(
-          fontSize: 12,
-          color: isSelected ? Colors.white : Colors.black,
-          fontWeight: FontWeight.w500,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildThemeButton(TrackTheme theme) {
-    final isSelected = _selectedTheme == theme;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTheme = theme;
-        });
-      },
       child: Container(
-        width: 30,
-        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
-          color: theme.color,
           shape: BoxShape.circle,
-          border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+          color: isSelected ? AppColors.primary : AppColors.background,
+        ),
+        child: Text(
+          day,
+          style: TextStyle(
+            fontSize: 10,
+            color: isSelected ? AppColors.secondary : AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
     );
@@ -99,170 +98,113 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
       height: MediaQuery.of(context).size.height * 0.9,
       child: Column(
         children: [
-          // Header with buttons
+          // Header
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey[600],
-                  ),
                   child: Text(
                     "Dismiss",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
                 TextButton(
                   onPressed: () {
-                    print('Title: ${_titleController.text}');
-                    print('Description: ${_descriptionController.text}');
-                    print('Date: $_selectedDate');
+                    debugPrint('Title: ${_titleController.text}');
+                    debugPrint('Description: ${_descriptionController.text}');
+                    debugPrint('Start Date: $_selectedDate');
+                    debugPrint('Schedule: $_selectedLoop');
+                    debugPrint('Selected Days: ${_selectedDays.join(', ')}');
+                    debugPrint('Icon Key: $_selectedIconKey');
                     Navigator.pop(context);
                   },
-                  style: TextButton.styleFrom(foregroundColor: Colors.blue),
-                  child: Text(
+                  child: const Text(
                     "Add",
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          // Form content
+
+          // Main Content
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  bottom: 20,
-                  top: 10,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "New Habit",
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
+                    const SizedBox(height: 20),
+
+                    // INFO Section
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20),
                       child: Text(
                         "INFO",
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                           letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                    SizedBox(height: 5),
-                    // White container for INFO section
+                    const SizedBox(height: 5),
                     Container(
-                      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Title field with black vertical bar
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 5),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _titleController,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: "Title",
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a title';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                            ],
+                          TextField(
+                            controller: _titleController,
+                            decoration: const InputDecoration(
+                              hintText: "Title",
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(fontSize: 16),
                           ),
-                          // SizedBox(height: 2),
-                          // Underline for title
-                          Container(height: 1, color: Colors.grey[300]),
-                          // SizedBox(height: 8),
-                          // Description field
-                          // Padding(
-                          //   padding: EdgeInsetsGeometry.only(left: 5),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 5),
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _descriptionController,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: "Description",
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                    ),
-                                    border: InputBorder.none,
-                                    enabledBorder: InputBorder.none,
-                                    focusedBorder: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          const Divider(height: 20),
+                          TextField(
+                            controller: _descriptionController,
+                            decoration: const InputDecoration(
+                              hintText: "Description",
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(fontSize: 14),
                           ),
-                          // ),
-                          // SizedBox(height: 8),
-                          // Underline for description
-                          Container(height: 1, color: Colors.grey[300]),
-                          SizedBox(height: 8),
-                          // Date picker
+                          const Divider(height: 20),
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  "Select the start date",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
+                              const Text(
+                                "Select the start date",
+                                style: TextStyle(fontSize: 14),
                               ),
                               GestureDetector(
                                 onTap: () async {
@@ -272,28 +214,22 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                                     firstDate: DateTime.now(),
                                     lastDate: DateTime(2100),
                                   );
-                                  if (picked != null &&
-                                      picked != _selectedDate) {
-                                    setState(() {
-                                      _selectedDate = picked;
-                                    });
-                                  }
+                                  if (picked != null)
+                                    setState(() => _selectedDate = picked);
                                 },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 13,
-                                    vertical: 7,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
+                                    color: AppColors.background,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     "${_selectedDate.day} ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}",
-                                    style: TextStyle(
-                                      fontSize: 14,
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.black87,
                                     ),
                                   ),
                                 ),
@@ -303,226 +239,162 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                    Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
+
+                    const SizedBox(height: 40),
+
+                    // GOAL Section
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20),
                       child: Text(
-                        "STREAK GOAL & LOOP",
+                        "GOAL",
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                           letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Container(
-                      padding: EdgeInsets.only(left: 20, right: 20),
-                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      height: 50,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.max,
                         children: [
-                          Text("Loop"),
-                          DropdownButton<String>(
+                          const Text(
+                            "Schedule",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          DropdownButton<Schedule>(
+                            dropdownColor: AppColors.background,
                             value: _selectedLoop,
-                            underline: SizedBox.shrink(),
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                            icon: Icon(
+                            underline: const SizedBox(),
+                            icon: const Icon(
                               Icons.unfold_more,
-                              size: 15,
-                              color: Colors.grey,
+                              color: AppColors.offNav,
                             ),
-                            onChanged: (String? newValue) {
-                              if (newValue != null) {
+                            onChanged: (value) {
+                              if (value != null) {
                                 setState(() {
-                                  _selectedLoop = newValue;
+                                  _selectedLoop = value;
+                                  if (value != Schedule.specificDay)
+                                    _selectedDays.clear();
                                 });
                               }
                             },
-                            items: <String>['Daily', 'Weekly', 'Monthly']
-                                .map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    alignment: AlignmentDirectional.center,
-                                    child: Text(
-                                      value,
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  );
-                                })
-                                .toList(),
+                            items: Schedule.values.map((e) {
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(scheduleLabel(e)),
+                              );
+                            }).toList(),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
 
-                    // Reminder
-                    Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
-                      child: Text(
-                        "REMINDER",
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[500],
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: _selectedDays.isEmpty
-                            ? BorderRadius.circular(10)
-                            : BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
-                      ),
-                      height: 50,
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ...Day.values.map((day) {
-                            return Expanded(child: _buildDayButton(day.label));
-                          }).toList(),
-                        ],
-                      ),
-                    ),
-                    // Container shown when a day is selected
-                    if (_selectedDays.isNotEmpty)
+                    if (_selectedLoop == Schedule.specificDay) ...[
+                      const SizedBox(height: 16),
                       Container(
                         width: double.infinity,
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
-                          ),
-                        ),
-                        padding: EdgeInsets.only(
-                          left: 16,
-                          right: 16,
-                          bottom: 16,
-                          // top: 16,
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(height: 1, color: Colors.grey[300]),
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.01,
-                            ),
-                            Text(
-                              "Selected Days",
+                            const Text(
+                              "Select Days",
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              _selectedDays.join(', '),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[700],
-                              ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: _daysOfWeek
+                                  .map(_buildDayButton)
+                                  .toList(),
                             ),
                           ],
                         ),
                       ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                    ],
 
-                    //  SELECT THEME
-                    Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
-                      child: Text(
-                        "SELECT THEME",
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[500],
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      width: double.infinity,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Colors.white,
-                      ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ...TrackTheme.values.map((theme) {
-                              return Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: _buildThemeButton(theme),
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                    Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
+                    const SizedBox(height: 40),
+
+                    // ICON Section
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20),
                       child: Text(
                         "ICON",
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                           letterSpacing: 0.5,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 5),
                     Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.only(left: 20, right: 20),
-                      height: 50,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
                         color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.max,
                         children: [
-                          Text("Pick an icon"),
-                          ElevatedButton(
-                            onPressed: () => showModalBottomSheet(
-                              context: context,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadiusGeometry.vertical(top: Radius.circular(10)),
+                          const Text(
+                            "Pick an icon",
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          GestureDetector(
+                            onTap: () async {
+                              final result = await showModalBottomSheet<String>(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.white,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                builder: (_) => IconSelectionBottomSheet(
+                                  selectedKey: _selectedIconKey,
+                                ), // Pass directly
+                              );
+                              if (result != null) {
+                                setState(() => _selectedIconKey = result);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.border),
                               ),
-                              builder: (BuildContext context) {
-                                return Container();
-                              },
+                              child: Icon(_currentIcon, size: 28),
                             ),
-                            child: Icon(Icons.tag),
                           ),
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -533,13 +405,3 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     );
   }
 }
-
-// class IconSlectection extends StatelessWidget{
-//   const IconSlectection({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(child: child);
-//   }
-
-// }
