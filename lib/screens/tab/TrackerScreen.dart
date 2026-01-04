@@ -47,12 +47,6 @@ class Trackerscreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Icon(
-                      LineAwesomeIcons.plus_solid,
-                      size: 30,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.getTextPrimary(context),
-                    ),
                   ],
                 ),
               ],
@@ -61,18 +55,29 @@ class Trackerscreen extends StatelessWidget {
 
           Expanded(
             child: Container(
+              width: double.infinity,
+
               color: AppColors.getBackground(context),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: habits.map((habit) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: HabitProgress(habit: habit),
-                    );
-                  }).toList(),
-                ),
-              ),
+              child: habits.isEmpty
+                  ? Center(
+                      child: Text(
+                        "No habits yet",
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(context),
+                        ),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: habits.map((habit) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: HabitProgress(habit: habit),
+                          );
+                        }).toList(),
+                      ),
+                    ),
             ),
           ),
         ],
