@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'dialyProgress.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class DailyProgress extends HiveObject {
   @HiveField(0)
   final String habitId;
