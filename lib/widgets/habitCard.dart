@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:steady/utils/iconData.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../models/habit.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import '../models/dialyProgress.dart';
 import '../theme/appColor.dart';
-
+import '../utils/iconData.dart';
+import '../repository/repoDialyGlobal.dart';
 
 class HabitCircleWidget extends StatefulWidget {
   final Habit habit;
@@ -13,117 +15,111 @@ class HabitCircleWidget extends StatefulWidget {
   State<HabitCircleWidget> createState() => _HabitCircleWidgetState();
 }
 
-class _HabitCircleWidgetState extends State<HabitCircleWidget> with SingleTickerProviderStateMixin {
+class _HabitCircleWidgetState extends State<HabitCircleWidget> {
+  final repo = dailyProgressRepo;
+
   double size = 130;
-  int currentStep = 0; 
-  late AnimationController _controller;
-  double progress = 0.0; 
+  int currentStep = 0;
+  double holdProgress = 0.0;
+  DailyProgress? dailyProgress;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 1), 
-    )..addListener(() {
-        setState(() {
-          progress = _controller.value;
-        });
-      });
+    _loadProgress();
+  }
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-
-        _controller.reset();
-        setState(() {
-          currentStep++;
-          progress = 0.0;
-        });
-      }
+  Future<void> _loadProgress() async {
+    final progress = repo.getToday(widget.habit.habitId);
+    setState(() {
+      dailyProgress = progress;
+      currentStep = progress.completedUnits;
     });
+  }
+
+  void _startHold() {
+    if (currentStep >= widget.habit.timePerDay) return;
+    if (_timer?.isActive == true) return;
+
+    const tick = Duration(milliseconds: 16);
+    const holdSeconds = 1.0;
+    final increment = tick.inMilliseconds / (holdSeconds * 1000);
+
+    _timer = Timer.periodic(tick, (_) {
+      setState(() {
+        holdProgress += increment;
+
+        if (holdProgress >= 1.0) {
+          holdProgress = 0.0;
+          currentStep++;
+          _timer?.cancel();
+          _onStepCompleted();
+        }
+      });
+    });
+  }
+
+  Future<void> _onStepCompleted() async {
+    if (dailyProgress == null) return;
+
+    dailyProgress!
+      ..completedUnits = currentStep
+      ..isCompleted = currentStep >= widget.habit.timePerDay;
+
+    await repo.upsert(dailyProgress!);
+  }
+
+  void _stopHold() {
+    _timer?.cancel();
+    setState(() => holdProgress = 0.0);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _timer?.cancel();
+    repo.removeListener(_loadProgress);
     super.dispose();
-  }
-
-  void _onLongPressStart(LongPressStartDetails details) {
-    if (currentStep < widget.habit.timePerDay) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  void _onLongPressEnd(LongPressEndDetails details) {
-    if (_controller.isAnimating) {
-      _controller.stop();
-      _controller.reset();
-      setState(() {
-        progress = 0.0;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    double totalProgress = (currentStep / widget.habit.timePerDay) + (progress / widget.habit.timePerDay);
+    int maxSteps = widget.habit.timePerDay;
+    double totalProgress = (currentStep / maxSteps) + (holdProgress / maxSteps);
 
     return Column(
       children: [
         GestureDetector(
-          onLongPressStart: _onLongPressStart,
-          onLongPressEnd: _onLongPressEnd,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-
-              Container(
-                width: size+10,
-                height: size+10,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.offNav, width: 8),
+          onLongPressStart: (_) => _startHold(),
+          onLongPressEnd: (_) => _stopHold(),
+          child: CircularPercentIndicator(
+            radius: size / 2,
+            lineWidth: 8,
+            percent: totalProgress.clamp(0.0, 1.0),
+            circularStrokeCap: CircularStrokeCap.round,
+            backgroundColor: AppColors.offNav,
+            progressColor: AppColors.primary,
+            center: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  iconMap[widget.habit.iconName] ?? Icons.help,
+                  size: 50,
+                  color: AppColors.textPrimary,
                 ),
-              ),
-
-              SizedBox(
-                width: size,
-                height: size,
-                child: CircularProgressIndicator(
-                  value: totalProgress.clamp(0.0, 1.0),
-                  strokeWidth: 8,
-                  color: AppColors.primary,
-                  backgroundColor: Colors.transparent,
+                const SizedBox(height: 4),
+                Text(
+                  "$currentStep/$maxSteps",
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-              ),
-             
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    iconMap[widget.habit.iconName],
-                    size: 50,
-                    color: AppColors.textPrimary,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "$currentStep/${widget.habit.timePerDay}",
-                    style: TextStyle(color: AppColors.textPrimary,fontWeight: FontWeight.w800),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           widget.habit.title,
-          style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
       ],
     );

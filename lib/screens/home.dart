@@ -5,6 +5,9 @@ import 'package:steady/theme/appColor.dart';
 import '../utils/enums.dart';
 import './tab/HomeScreen.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import '../models/habit.dart';
+import '../repository/habits_repository.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,6 +17,23 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List<Habit> habits = [];
+
+  
+  @override
+  void initState() {
+    super.initState();
+    loadHabits();
+  }
+
+  Future<void> loadHabits() async {
+    final repo = HabitRepository();
+    final loadedHabits = await repo.loadHabits();
+    setState(() {
+      habits = loadedHabits;
+    });
+  }
+
   AllTab currentTab = AllTab.home;
   @override
   Widget build(BuildContext context) {
@@ -21,7 +41,7 @@ class _HomeState extends State<Home> {
       backgroundColor: AppColors.secondary,
       body: IndexedStack(
         index: currentTab.index,
-        children: [Homescreen(), Trackerscreen(), Setting()],
+        children: [Homescreen(habits: habits,), Trackerscreen(habits: habits,), Setting()],
       ),
 
       bottomNavigationBar: Container(
@@ -38,12 +58,7 @@ class _HomeState extends State<Home> {
         ),
         child: Material(
           type: MaterialType.transparency,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              splashFactory: NoSplash.splashFactory, // removes ripple
-              highlightColor: Colors.transparent, // removes highlight
-            ),
-            child: BottomNavigationBar(
+          child:  BottomNavigationBar(
               enableFeedback: false,
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -73,7 +88,7 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
-      ),
+      
     );
   }
 }

@@ -4,37 +4,23 @@ import 'package:steady/theme/appColor.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
 import '../../repository/habits_repository.dart';
+import '../../repository/daily_progress_repository.dart';
 
 class Homescreen extends StatefulWidget {
-  const Homescreen({super.key});
-
+  const Homescreen({super.key,required this.habits});
+  final List<Habit> habits;
   @override
   State<Homescreen> createState() => _HomescreenState();
 }
 
 class _HomescreenState extends State<Homescreen> {
-  List<Habit> habits = [];
 
-  @override
-  void initState() {
-    super.initState();
-    loadHabits();
-  }
-
-  Future<void> loadHabits() async {
-    final repo = HabitRepository();
-    final loadedHabits = await repo.loadHabits();
-    setState(() {
-      habits = loadedHabits;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          // Top bar-like section
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -91,9 +77,9 @@ class _HomescreenState extends State<Homescreen> {
                   mainAxisSpacing:2,
                   crossAxisSpacing: 10,
                 ),
-                itemCount: habits.length,
+                itemCount: widget.habits.length,
                 itemBuilder: (context, index) {
-                  return HabitCircleWidget(habit: habits[index],);
+                  return HabitCircleWidget(habit: widget.habits[index],);
                 },
               ),
             ),
