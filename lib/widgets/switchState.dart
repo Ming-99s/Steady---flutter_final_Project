@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:steady/theme/theme_provider.dart';
 
-class Switchstate extends StatefulWidget {
-  final bool light;
-  const Switchstate({super.key, this.light = true});
-
-  @override
-  State<Switchstate> createState() => _SwitchstateState();
-}
-
-class _SwitchstateState extends State<Switchstate> {
-  late bool _isLight;
-
-  @override
-  void initState() {
-    super.initState();
-    _isLight = widget.light;
-  }
+class Switchstate extends StatelessWidget {
+  const Switchstate({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Switch(
-      value: _isLight,
-      activeColor: Colors.green,
+      value: themeProvider.isDarkMode,
+      activeColor: Colors.blue,
       onChanged: (bool value) {
-        setState(() {
-          _isLight = value;
-        });
+        themeProvider.toggleTheme();
       },
     );
   }

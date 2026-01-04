@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppPrefs {
   static const keyFirstLaunch = 'first_launch';
   static const keyLastMoodDate = 'last_mood_date';
+  static const keyDarkMode = 'dark_mode';
 
   // Check first launch
   static Future<bool> isFirstLaunch() async {
@@ -31,5 +32,16 @@ class AppPrefs {
   static Future<void> setMoodCompletedToday() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(keyLastMoodDate, DateTime.now().toIso8601String());
+  }
+
+  // Dark mode preferences
+  static Future<bool> isDarkMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(keyDarkMode) ?? false;
+  }
+
+  static Future<void> setDarkMode(bool isDark) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(keyDarkMode, isDark);
   }
 }

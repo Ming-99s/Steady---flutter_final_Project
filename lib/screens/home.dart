@@ -8,7 +8,6 @@ import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../models/habit.dart';
 import '../repository/habits_repository.dart';
 
-
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -19,7 +18,6 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<Habit> habits = [];
 
-  
   @override
   void initState() {
     super.initState();
@@ -38,57 +36,60 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondary,
+      backgroundColor: AppColors.getSecondary(context),
       body: IndexedStack(
         index: currentTab.index,
-        children: [Homescreen(habits: habits,), Trackerscreen(habits: habits,), Setting()],
+        children: [
+          Homescreen(habits: habits),
+          Trackerscreen(habits: habits),
+          Setting(),
+        ],
       ),
 
       bottomNavigationBar: Container(
-        padding: EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(
-          color: AppColors.secondary,
+          color: AppColors.getSecondary(context),
           boxShadow: [
             BoxShadow(
               color: const Color.fromARGB(44, 0, 0, 0),
               blurRadius: 10,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Material(
           type: MaterialType.transparency,
-          child:  BottomNavigationBar(
-              enableFeedback: false,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              type: BottomNavigationBarType.fixed,
-              currentIndex: currentTab.index,
-              selectedItemColor: AppColors.primary,
-              unselectedItemColor: AppColors.offNav,
-              onTap: (index) {
-                setState(() {
-                  currentTab = AllTab.values[index];
-                });
-              },
-              items: [
-                BottomNavigationBarItem(
-                  icon: Icon(LineAwesomeIcons.building),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(LineAwesomeIcons.history_solid),
-                  label: 'Tracker',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(LineAwesomeIcons.sliders_h_solid),
-                  label: 'Setting',
-                ),
-              ],
-            ),
+          child: BottomNavigationBar(
+            enableFeedback: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            currentIndex: currentTab.index,
+            selectedItemColor: AppColors.getPrimary(context),
+            unselectedItemColor: AppColors.getOffNav(context),
+            onTap: (index) {
+              setState(() {
+                currentTab = AllTab.values[index];
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(LineAwesomeIcons.building),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(LineAwesomeIcons.history_solid),
+                label: 'Tracker',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(LineAwesomeIcons.sliders_h_solid),
+                label: 'Setting',
+              ),
+            ],
           ),
         ),
-      
+      ),
     );
   }
 }

@@ -8,15 +8,13 @@ import '../../repository/habits_repository.dart';
 import '../../repository/daily_progress_repository.dart';
 
 class Homescreen extends StatefulWidget {
-  const Homescreen({super.key,required this.habits});
+  const Homescreen({super.key, required this.habits});
   final List<Habit> habits;
   @override
   State<Homescreen> createState() => _HomescreenState();
 }
 
 class _HomescreenState extends State<Homescreen> {
-
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -26,13 +24,13 @@ class _HomescreenState extends State<Homescreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             decoration: BoxDecoration(
-              color: AppColors.secondary, // background like appbar
+              color: AppColors.getSecondary(context), // background like appbar
               boxShadow: [
                 BoxShadow(
                   color: const Color.fromARGB(169, 73, 72, 72),
                   blurRadius: 10,
                   spreadRadius: 2,
-                  offset: Offset(0, 30), // shadow downwards
+                  offset: const Offset(0, 30), // shadow downwards
                 ),
               ],
             ),
@@ -44,11 +42,11 @@ class _HomescreenState extends State<Homescreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Habits',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: AppColors.getTextPrimary(context),
                             fontWeight: FontWeight.w800,
                             fontSize: 30,
                           ),
@@ -61,11 +59,12 @@ class _HomescreenState extends State<Homescreen> {
                         LineAwesomeIcons.plus_solid,
                         size: 30,
                         fontWeight: FontWeight.w900,
+                        color: AppColors.getTextPrimary(context),
                       ),
                       onPressed: () => showModalBottomSheet(
                         context: context,
-                        backgroundColor: AppColors.background,
-                        shape: RoundedRectangleBorder(
+                        backgroundColor: AppColors.getBackground(context),
+                        shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(10),
                           ),
@@ -82,7 +81,7 @@ class _HomescreenState extends State<Homescreen> {
 
                 Text(
                   'Low energy is okay. Start small today.',
-                  style: TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: AppColors.getTextPrimary(context)),
                 ),
               ],
             ),
@@ -91,17 +90,17 @@ class _HomescreenState extends State<Homescreen> {
           // The rest of the home screen content
           Expanded(
             child: Container(
-              color: AppColors.background,
+              color: AppColors.getBackground(context),
               child: GridView.builder(
-                padding: EdgeInsets.only(top: 20),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                padding: const EdgeInsets.only(top: 20),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2, // 2 items per row
                   mainAxisSpacing: 2,
                   crossAxisSpacing: 10,
                 ),
                 itemCount: widget.habits.length,
                 itemBuilder: (context, index) {
-                  return HabitCircleWidget(habit: widget.habits[index],);
+                  return HabitCircleWidget(habit: widget.habits[index]);
                 },
               ),
             ),

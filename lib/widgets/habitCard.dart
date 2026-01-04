@@ -94,8 +94,8 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
           onLongPressEnd: (_) => _stopHold(),
           child: Container(
             decoration: BoxDecoration(
-            color: AppColors.secondary,
-              shape: BoxShape.circle
+              color: AppColors.secondary,
+              shape: BoxShape.circle,
             ),
             child: CircularPercentIndicator(
               radius: size / 2,
@@ -115,7 +115,10 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
                   const SizedBox(height: 4),
                   Text(
                     "$currentStep/$maxSteps",
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                 ],
               ),

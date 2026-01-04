@@ -13,7 +13,7 @@ class Setting extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: AppColors.secondary, // background like appbar
+          color: AppColors.getSecondary(context), // background like appbar
           boxShadow: [
             BoxShadow(
               color: const Color.fromARGB(13, 73, 72, 72),
@@ -33,17 +33,16 @@ class Setting extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsetsGeometry.only(left: 20),
+                      padding: const EdgeInsets.only(left: 20),
                       child: Text(
                         'Setting',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: AppColors.getTextPrimary(context),
                           fontWeight: FontWeight.w800,
                           fontSize: 30,
                         ),
                       ),
                     ),
-
                     SizedBox(height: MediaQuery.of(context).size.height * 0.03),
                   ],
                 ),
@@ -53,24 +52,37 @@ class Setting extends StatelessWidget {
             // Main Content
             Expanded(
               child: Container(
-                color: AppColors.background,
+                color: AppColors.getBackground(context),
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: Colors.white,
+                          color: AppColors.getCardBackground(context),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           mainAxisSize: MainAxisSize.max,
-                          children: [Text("Theme"), Switchstate()],
+                          children: [
+                            Text(
+                              "Dark Theme",
+                              style: TextStyle(
+                                color: AppColors.getTextPrimary(context),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Switchstate(),
+                          ],
                         ),
                       ),
                     ],
