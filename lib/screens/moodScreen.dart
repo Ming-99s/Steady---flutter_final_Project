@@ -15,13 +15,12 @@ class MoodScreen extends StatefulWidget {
 class _MoodScreenState extends State<MoodScreen> {
   String? _selectedMood; // store the selected mood title
 
-
   @override
   Widget build(BuildContext context) {
     // List of moods
 
-
     return Scaffold(
+      backgroundColor: AppColors.getBackground(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -29,19 +28,19 @@ class _MoodScreenState extends State<MoodScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 30),
-              const Text(
+              Text(
                 'How are you feeling today?',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimary(context),
                   fontSize: 23.7,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Your mood shapes your journey.',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: AppColors.getTextSecondary(context),
                   fontSize: 16.1,
                   fontWeight: FontWeight.w500,
                 ),
@@ -118,21 +117,28 @@ class _MoodScreenState extends State<MoodScreen> {
                         await AppPrefs.setMoodCompletedToday();
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => Home(),
-                          ),
+                          MaterialPageRoute(builder: (_) => Home()),
                         );
                       },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 20),
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: AppColors.getPrimary(context),
+                  foregroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : AppColors.secondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Continue',
-                  style: TextStyle(color: AppColors.secondary, fontSize: 18),
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : AppColors.secondary,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
