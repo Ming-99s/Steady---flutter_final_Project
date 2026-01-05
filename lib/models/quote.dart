@@ -1,19 +1,7 @@
-import 'package:hive_flutter/hive_flutter.dart';
-
-part 'quote.g.dart';
-
-@HiveType(typeId: 2)
-class Quote extends HiveObject {
-  @HiveField(0)
+class Quote {
   final String id;
-
-  @HiveField(1)
   final String text;
-
-  @HiveField(2)
   final String author;
-
-  @HiveField(3)
   final DateTime createdAt;
 
   Quote({
@@ -22,4 +10,24 @@ class Quote extends HiveObject {
     required this.author,
     required this.createdAt,
   });
+
+  // Factory constructor to create Quote from JSON
+  factory Quote.fromJson(Map<String, dynamic> json) {
+    return Quote(
+      id: json['id'] as String,
+      text: json['text'] as String,
+      author: json['author'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+
+  // Convert Quote to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'author': author,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
 }

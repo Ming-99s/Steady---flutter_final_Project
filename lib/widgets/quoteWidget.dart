@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/quote.dart';
-import '../repository/quotes_repos.dart';
+import '../utils/quotes_repos.dart';
 
 class QuoteWidget extends StatefulWidget {
   const QuoteWidget({super.key});

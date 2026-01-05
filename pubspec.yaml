@@ -65,6 +65,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/data/habits.json
+    - assets/data/quotes.json
   fonts:
     - family: Inter
       fonts:
