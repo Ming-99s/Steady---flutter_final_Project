@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:steady/theme/appColor.dart';
 import 'package:steady/widgets/switchState.dart';
 
-class Setting extends StatelessWidget {
+class Setting extends StatefulWidget {
   const Setting({super.key});
+
+  @override
+  State<Setting> createState() => _SettingState();
+}
+
+class _SettingState extends State<Setting> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +68,7 @@ class Setting extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
+                      // Dark Theme Setting
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
@@ -85,6 +95,8 @@ class Setting extends StatelessWidget {
                           ],
                         ),
                       ),
+
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

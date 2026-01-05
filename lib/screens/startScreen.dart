@@ -79,6 +79,7 @@ class Startscreen extends StatelessWidget {
 
   Future<void> _handleStart(BuildContext context) async {
     await AppPrefs.setFirstLaunchFalse();
+    await AppPrefs.setStartScreenShownToday();
 
     Navigator.pushReplacement(
       context,

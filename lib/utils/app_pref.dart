@@ -44,4 +44,38 @@ class AppPrefs {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(keyDarkMode, isDark);
   }
+
+  // Selected mood preferences
+  static const keySelectedMood = 'selected_mood';
+
+  static Future<String?> getSelectedMood() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(keySelectedMood);
+  }
+
+  static Future<void> setSelectedMood(String mood) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(keySelectedMood, mood);
+  }
+
+  // Last StartScreen shown date
+  static const keyLastStartScreenDate = 'last_start_screen_date';
+
+  static Future<bool> shouldShowStartScreen() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dateString = prefs.getString(keyLastStartScreenDate);
+    if (dateString == null) return true; // First time
+
+    final lastDate = DateTime.parse(dateString);
+    final now = DateTime.now();
+    return lastDate.year != now.year ||
+        lastDate.month != now.month ||
+        lastDate.day != now.day;
+  }
+
+  static Future<void> setStartScreenShownToday() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+        keyLastStartScreenDate, DateTime.now().toIso8601String());
+  }
 }

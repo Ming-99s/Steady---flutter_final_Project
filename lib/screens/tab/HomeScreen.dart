@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:steady/theme/appColor.dart';
 import 'package:steady/widgets/addOrEditScreen.dart';
+import 'package:steady/widgets/quoteWidget.dart';
+import 'package:steady/widgets/showQuoteDialogue.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
+import '../../models/quote.dart';
+import '../../utils/app_pref.dart';
+import '../../utils/enums.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key, required this.habits});
@@ -14,6 +19,53 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  Quote? _savedQuote;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedQuote();
+  }
+
+  Future<void> _loadSavedQuote() async {
+    final savedMood = await AppPrefs.getSelectedMood();
+    if (savedMood != null && mounted) {
+      setState(() {
+        _savedQuote = _getMoodQuote(savedMood);
+      });
+    }
+  }
+
+  Quote _getMoodQuote(String mood) {
+    final moodQuotes = {
+      MoodType.motivate.title: Quote(
+        id: '1',
+        text: "The only way to do great work is to love what you do.",
+        author: "Steve Jobs",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.tired.title: Quote(
+        id: '2',
+        text: "Don't watch the clock; do what it does. Keep going.",
+        author: "Sam Levenson",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.normal.title: Quote(
+        id: '3',
+        text: "Low energy is okay. Start small today.",
+        author: "Steady",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.stressed.title: Quote(
+        id: '4',
+        text: "Every accomplishment starts with the decision to try.",
+        author: "John F. Kennedy",
+        createdAt: DateTime.now(),
+      ),
+    };
+    return moodQuotes[mood] ?? moodQuotes[MoodType.normal.title]!;
+  }
+
   /// Get only habits that should appear today
   List<Habit> get _todayHabits {
     final today = DateTime.now().weekday; // 1=Mon, 7=Sun
@@ -69,7 +121,9 @@ class _HomescreenState extends State<Homescreen> {
                         context: context,
                         backgroundColor: AppColors.getBackground(context),
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(10),
+                          ),
                         ),
                         isScrollControlled: true,
                         useSafeArea: true,
@@ -78,10 +132,66 @@ class _HomescreenState extends State<Homescreen> {
                     ),
                   ],
                 ),
-                Text(
-                  'Low energy is okay. Start small today.',
-                  style: TextStyle(color: AppColors.getTextPrimary(context)),
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    _savedQuote?.text ??
+                        'Low energy is okay. Start small today.',
+                    style: TextStyle(color: AppColors.getTextPrimary(context)),
+                  ),
                 ),
+
+                //  Test
+                // child: TextButton(
+                //   onPressed: () {
+                //     showDialog(
+                //       context: context,
+                //       builder: (BuildContext context) {
+                //         return QuoteWidget();
+                //       },
+                //     );
+                //   },
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           const Text(
+                //             'Habits',
+                //             style: TextStyle(
+                //               fontWeight: FontWeight.w800,
+                //               fontSize: 30,
+                //             ),
+                //           ),
+                //           IconButton(
+                //             icon: Icon(
+                //               LineAwesomeIcons.plus_solid,
+                //               size: 30,
+                //               fontWeight: FontWeight.w900,
+                //               color: AppColors.getTextPrimary(context),
+                //             ),
+                //             onPressed: () => showModalBottomSheet(
+                //               context: context,
+                //               backgroundColor: AppColors.getBackground(context),
+                //               shape: const RoundedRectangleBorder(
+                //                 borderRadius: BorderRadius.vertical(
+                //                   top: Radius.circular(10),
+                //                 ),
+                //               ),
+                //               isScrollControlled: true,
+                //               useSafeArea: true,
+                //               builder: (_) => AddHabitScreen(),
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //       Text(
+                //         'Low energy is okay. Start small today.',
+                //         style: TextStyle(color: AppColors.getTextPrimary(context)),
+                //       ),
+                //     ],
+                //   ),
               ],
             ),
           ),
@@ -94,17 +204,20 @@ class _HomescreenState extends State<Homescreen> {
                   ? Center(
                       child: Text(
                         "No habits for today",
-                        style: TextStyle(color: AppColors.getTextSecondary(context)),
+                        style: TextStyle(
+                          color: AppColors.getTextSecondary(context),
+                        ),
                       ),
                     )
                   : GridView.builder(
                       padding: const EdgeInsets.all(20),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 20,
-                        crossAxisSpacing: 20,
-                        childAspectRatio: 0.85,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 20,
+                            crossAxisSpacing: 20,
+                            childAspectRatio: 0.85,
+                          ),
                       itemCount: todayHabits.length,
                       itemBuilder: (context, index) {
                         final habit = todayHabits[index];
