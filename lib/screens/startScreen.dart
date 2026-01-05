@@ -10,7 +10,7 @@ class Startscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackground(context),
+      backgroundColor: AppColors.getSecondary(context),
       body: Center(
         child: SafeArea(
           child: Padding(

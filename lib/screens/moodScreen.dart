@@ -23,7 +23,7 @@ class _MoodScreenState extends State<MoodScreen> {
     // List of moods
 
     return Scaffold(
-      backgroundColor: AppColors.getBackground(context),
+      backgroundColor: AppColors.getSecondary(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
