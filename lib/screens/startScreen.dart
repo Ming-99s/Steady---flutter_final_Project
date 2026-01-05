@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:steady/theme/appColor.dart';
 import './moodScreen.dart';
-import './home.dart';
 import '../utils/app_pref.dart';
 
 class Startscreen extends StatelessWidget {

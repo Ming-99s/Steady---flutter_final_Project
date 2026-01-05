@@ -5,7 +5,6 @@ import 'package:steady/screens/tab/TrackerScreen.dart';
 import 'package:steady/screens/tab/setting.dart';
 import 'package:steady/theme/appColor.dart';
 import '../models/habit.dart';
-import '../models/quote.dart';
 import '../utils/enums.dart';
 import '../repository/habitGlobal.dart';
 

@@ -122,7 +122,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         return Day.values.firstWhere((d) => d.name.startsWith(lower));
       }).toList();
     }
-    final scheduleInts = scheduleDays.map((d) => d.index).toList();
+    final List<int> scheduleInts = scheduleDays.map((d) => d.index).toList();
 
     try {
       if (isEditMode) {

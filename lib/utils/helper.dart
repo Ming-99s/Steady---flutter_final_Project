@@ -11,6 +11,30 @@ String scheduleLabel(Schedule s) {
   }
 }
 
+String scheduleForCard(List<int> days) {
+  if (days.isEmpty) return 'No schedule';
+
+  final sorted = [...days]..sort();
+
+  // Everyday: 1–7
+  if (sorted.length == 7 &&
+      sorted.first == 0 &&
+      sorted.last == 6) {
+    return 'Everyday';
+  }
+
+  // Weekend: Saturday + Sunday
+  if (sorted.length == 2 &&
+      sorted.contains(5) &&
+      sorted.contains(6)) {
+    return 'Weekend';
+  }
+
+  // Otherwise: specific days
+  return 'Specific day';
+}
+
+
 Schedule getScheduleType(List<Day> schedule) {
   final allDays = Day.values.toSet();
   final weekendDays = {Day.saturday, Day.sunday};
@@ -38,5 +62,18 @@ String dayAbbr(Day day) {
     case Day.friday: return 'Fri';
     case Day.saturday: return 'Sat';
     case Day.sunday: return 'Sun';
+  }
+}
+
+String dayAbbrInt(int day) {
+  switch(day) {
+    case 0: return 'Mon';
+    case 1: return 'Tue';
+    case 2: return 'Wed';
+    case 3: return 'Thu';
+    case 4: return 'Fri';
+    case 5: return 'Sat';
+    case 6: return 'Sun';
+    default : return '';
   }
 }
