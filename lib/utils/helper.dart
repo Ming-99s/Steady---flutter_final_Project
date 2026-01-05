@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import 'package:steady/models/habit.dart';
+import '../theme/appColor.dart';
 import 'enums.dart';
 
 String scheduleLabel(Schedule s) {
@@ -10,6 +14,24 @@ String scheduleLabel(Schedule s) {
       return 'Specific Day';
   }
 }
+
+Color cellColor(DateTime date,Habit habit,Map<DateTime, int> progressMap) {
+  final completed = progressMap[date] ?? 0;
+
+  final habitStart = DateTime(habit.startDate.year, habit.startDate.month, habit.startDate.day);
+  final todayKey = DateTime.now(); 
+
+  if (completed == 0 && (date.isAfter(todayKey) || date.isBefore(habitStart))) {
+    return AppColors.border;
+  }
+
+  if (completed > 0 && completed < habit.timePerDay / 2) return const Color.fromARGB(255, 120, 171, 252);
+
+  if (completed >= habit.timePerDay / 2) return AppColors.textSecondary;
+
+  return AppColors.border;
+}
+
 
 
   String getMonthName(int month) {
