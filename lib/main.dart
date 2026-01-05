@@ -9,6 +9,9 @@ import 'package:device_preview/device_preview.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './models/dialyProgress.dart';
 import './models/habit.dart';
+import './models/quote.dart';
+import './repository/quotes_repos.dart';
+
 // import './repository/habitGlobal.dart';
 // import './utils/enums.dart';
 void main() async {
@@ -18,8 +21,10 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(HabitAdapter());
   Hive.registerAdapter(DailyProgressAdapter());
+  Hive.registerAdapter(QuoteAdapter());
   await Hive.openBox<Habit>('habits');
   await Hive.openBox<DailyProgress>('daily_progress');
+  await QuotesRepository.initializeQuotes();
 
   runApp(
     DevicePreview(
