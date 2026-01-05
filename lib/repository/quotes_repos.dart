@@ -35,15 +35,8 @@ class QuotesRepository {
       ),
       Quote(
         id: const Uuid().v4(),
-        text:
-            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        author: "Winston Churchill",
-        createdAt: DateTime.now(),
-      ),
-      Quote(
-        id: const Uuid().v4(),
-        text: "Believe you can and you're halfway there.",
-        author: "Theodore Roosevelt",
+        text: "Low energy is okay. Start small today.",
+        author: "Steady",
         createdAt: DateTime.now(),
       ),
       Quote(

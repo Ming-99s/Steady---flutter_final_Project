@@ -7,7 +7,8 @@ import 'package:steady/widgets/showQuoteDialogue.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
 import '../../models/quote.dart';
-import '../../repository/quotes_repos.dart';
+import '../../utils/app_pref.dart';
+import '../../utils/enums.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key, required this.habits});
@@ -18,21 +19,51 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  Quote? _currentQuote;
+  Quote? _savedQuote;
 
   @override
   void initState() {
     super.initState();
-    _loadRandomQuote();
+    _loadSavedQuote();
   }
 
-  Future<void> _loadRandomQuote() async {
-    final quote = await QuotesRepository.getRandomQuote();
-    if (mounted) {
+  Future<void> _loadSavedQuote() async {
+    final savedMood = await AppPrefs.getSelectedMood();
+    if (savedMood != null && mounted) {
       setState(() {
-        _currentQuote = quote;
+        _savedQuote = _getMoodQuote(savedMood);
       });
     }
+  }
+
+  Quote _getMoodQuote(String mood) {
+    final moodQuotes = {
+      MoodType.motivate.title: Quote(
+        id: '1',
+        text: "The only way to do great work is to love what you do.",
+        author: "Steve Jobs",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.tired.title: Quote(
+        id: '2',
+        text: "Don't watch the clock; do what it does. Keep going.",
+        author: "Sam Levenson",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.normal.title: Quote(
+        id: '3',
+        text: "Low energy is okay. Start small today.",
+        author: "Steady",
+        createdAt: DateTime.now(),
+      ),
+      MoodType.stressed.title: Quote(
+        id: '4',
+        text: "Every accomplishment starts with the decision to try.",
+        author: "John F. Kennedy",
+        createdAt: DateTime.now(),
+      ),
+    };
+    return moodQuotes[mood] ?? moodQuotes[MoodType.normal.title]!;
   }
 
   /// Get only habits that should appear today
@@ -102,9 +133,9 @@ class _HomescreenState extends State<Homescreen> {
                   ],
                 ),
                 GestureDetector(
-                  onTap: _loadRandomQuote,
+                  onTap: () {},
                   child: Text(
-                    _currentQuote?.text ??
+                    _savedQuote?.text ??
                         'Low energy is okay. Start small today.',
                     style: TextStyle(color: AppColors.getTextPrimary(context)),
                   ),

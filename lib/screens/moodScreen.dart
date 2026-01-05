@@ -4,6 +4,7 @@ import '../theme/appColor.dart';
 import '../widgets/moodWidget.dart';
 import '../utils/app_pref.dart';
 import '../utils/enums.dart';
+import '../models/quote.dart';
 
 class MoodScreen extends StatefulWidget {
   const MoodScreen({super.key});
@@ -14,6 +15,35 @@ class MoodScreen extends StatefulWidget {
 
 class _MoodScreenState extends State<MoodScreen> {
   String? _selectedMood; // store the selected mood title
+  Quote? _selectedQuote; // store the selected mood's quote
+
+  // Map moods to their corresponding quotes
+  final Map<String, Quote> _moodQuotes = {
+    MoodType.motivate.title: Quote(
+      id: '1',
+      text: "The only way to do great work is to love what you do.",
+      author: "Steve Jobs",
+      createdAt: DateTime.now(),
+    ),
+    MoodType.tired.title: Quote(
+      id: '2',
+      text: "Don't watch the clock; do what it does. Keep going.",
+      author: "Sam Levenson",
+      createdAt: DateTime.now(),
+    ),
+    MoodType.normal.title: Quote(
+      id: '3',
+      text: "Low energy is okay. Start small today.",
+      author: "Steady",
+      createdAt: DateTime.now(),
+    ),
+    MoodType.stressed.title: Quote(
+      id: '4',
+      text: "Every accomplishment starts with the decision to try.",
+      author: "John F. Kennedy",
+      createdAt: DateTime.now(),
+    ),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +88,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       onTap: () {
                         setState(() {
                           _selectedMood = MoodType.motivate.title;
+                          _selectedQuote = _moodQuotes[MoodType.motivate.title];
                         });
                       },
                     ),
@@ -71,6 +102,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       onTap: () {
                         setState(() {
                           _selectedMood = MoodType.tired.title;
+                          _selectedQuote = _moodQuotes[MoodType.tired.title];
                         });
                       },
                     ),
@@ -89,6 +121,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       onTap: () {
                         setState(() {
                           _selectedMood = MoodType.normal.title;
+                          _selectedQuote = _moodQuotes[MoodType.normal.title];
                         });
                       },
                     ),
@@ -102,6 +135,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       onTap: () {
                         setState(() {
                           _selectedMood = MoodType.stressed.title;
+                          _selectedQuote = _moodQuotes[MoodType.stressed.title];
                         });
                       },
                     ),
@@ -115,9 +149,10 @@ class _MoodScreenState extends State<MoodScreen> {
                     ? null
                     : () async {
                         await AppPrefs.setMoodCompletedToday();
+                        await AppPrefs.setSelectedMood(_selectedMood!);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => Home()),
+                          MaterialPageRoute(builder: (_) => const Home()),
                         );
                       },
                 style: ElevatedButton.styleFrom(
