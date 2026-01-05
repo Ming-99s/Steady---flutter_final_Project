@@ -18,7 +18,6 @@ class DailyProgressRepository extends ChangeNotifier {
       return existing;
     }
 
-    // Create new one if not found
     final newProgress = DailyProgress(
       habitId: habitId,
       date: dateOnly,
@@ -26,7 +25,6 @@ class DailyProgressRepository extends ChangeNotifier {
       isCompleted: false,
     );
 
-    // IMPORTANT: Save it immediately!
     _box.put(key, newProgress);
 
     return newProgress;
@@ -52,11 +50,6 @@ class DailyProgressRepository extends ChangeNotifier {
     return '${habitId}_$d';
   }
 
-  /// Optional: Clear all data (for testing/logout)
-  Future<void> clearAll() async {
-    await _box.clear();
-    notifyListeners();
-  }
 
 HabitProgress calculateHabitProgress(String habitId, List<int> newSchedule) {
   final all = getAllForHabit(habitId)..sort((a, b) => a.date.compareTo(b.date));
