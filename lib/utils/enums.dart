@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 enum Day {
   monday("Mon"),
@@ -29,6 +28,12 @@ enum MoodType {
 }
 
 enum AllTab { home, add, tracker, setting }
+
+enum HighlightType {
+  currentStreak,
+  bestStreak,
+  completionCount,
+}
 
 // enum TrackTheme {
 //   red(color: Color(0xFFFF6B6B)),

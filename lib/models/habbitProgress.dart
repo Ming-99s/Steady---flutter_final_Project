@@ -1,5 +1,5 @@
 class HabitProgress {
-  final int habitId;
+  final String habitId;
   int currentStreak;
   int bestStreak;
   int completionCount;

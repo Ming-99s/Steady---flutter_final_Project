@@ -116,8 +116,8 @@ class _HomescreenState extends State<Homescreen> {
                 GestureDetector(
                   onTap: () {},
                   child: Text(
-                    _savedQuote?.text ??
-                        'Low energy is okay. Start small today.',
+                    _savedQuote?.text ?? '' ,
+                        
                     style: TextStyle(color: AppColors.getTextPrimary(context)),
                   ),
                 ),

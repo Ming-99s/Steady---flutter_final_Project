@@ -1,15 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/dialyProgress.dart';
-
+import '../models/habbitProgress.dart';
 
 class DailyProgressRepository extends ChangeNotifier {
   static const String _boxName = 'daily_progress';
 
   Box<DailyProgress> get _box => Hive.box<DailyProgress>(_boxName);
 
-  /// Gets today's progress for a habit.
-  /// If none exists, creates and SAVES a new one with defaults.
   DailyProgress getToday(String habitId) {
     final now = DateTime.now();
     final dateOnly = DateTime(now.year, now.month, now.day);
@@ -43,9 +41,7 @@ class DailyProgressRepository extends ChangeNotifier {
 
   /// Get all progress entries for a specific habit (useful for streaks/charts)
   List<DailyProgress> getAllForHabit(String habitId) {
-    return _box.values
-        .where((p) => p.habitId == habitId)
-        .toList()
+    return _box.values.where((p) => p.habitId == habitId).toList()
       ..sort((a, b) => a.date.compareTo(b.date)); // Optional: sort by date
   }
 
@@ -60,5 +56,59 @@ class DailyProgressRepository extends ChangeNotifier {
   Future<void> clearAll() async {
     await _box.clear();
     notifyListeners();
+  }
+
+  HabitProgress calculateHabitProgress(String habitId, List<int> schedule) {
+    final all =
+        getAllForHabit(
+            habitId,
+          ).where((p) => schedule.contains(p.date.weekday)).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+
+    int currentStreak = 0;
+    int bestStreak = 0;
+    int completionCount = 0;
+
+    DateTime? previousDate;
+
+    for (final progress in all) {
+      if (progress.isCompleted) {
+        completionCount++;
+
+        if (previousDate == null ||
+            progress.date.difference(previousDate).inDays ==
+                getNextScheduledDayGap(previousDate, schedule)) {
+          currentStreak++;
+        } else {
+          currentStreak = 1;
+        }
+
+        bestStreak = bestStreak > currentStreak ? bestStreak : currentStreak;
+        previousDate = progress.date;
+      } else {
+        previousDate = null;
+        currentStreak = 0;
+      }
+    }
+
+    return HabitProgress(
+      habitId: habitId,
+      currentStreak: currentStreak,
+      bestStreak: bestStreak,
+      completionCount: completionCount,
+    );
+  }
+
+  /// Helper to get number of days until the next scheduled day
+  int getNextScheduledDayGap(DateTime prev, List<int> schedule) {
+    // weekdays are 1..7
+    final sorted = [...schedule]..sort();
+    int prevWeekday = prev.weekday;
+
+    for (final day in sorted) {
+      if (day > prevWeekday) return day - prevWeekday;
+    }
+    // wrap around the week
+    return 7 - prevWeekday + sorted.first;
   }
 }

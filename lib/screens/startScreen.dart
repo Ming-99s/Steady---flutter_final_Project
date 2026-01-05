@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:steady/theme/appColor.dart';
 import './moodScreen.dart';
-import './home.dart';
 import '../utils/app_pref.dart';
 
 class Startscreen extends StatelessWidget {
@@ -10,7 +9,7 @@ class Startscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackground(context),
+      backgroundColor: AppColors.getSecondary(context),
       body: Center(
         child: SafeArea(
           child: Padding(

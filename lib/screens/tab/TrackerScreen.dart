@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/habit.dart';
 import '../../widgets/habitProgress.dart';
 import '../../theme/appColor.dart';
-import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 class Trackerscreen extends StatelessWidget {
   final List<Habit> habits;
