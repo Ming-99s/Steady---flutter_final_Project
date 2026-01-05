@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:steady/theme/appColor.dart';
 import 'package:steady/widgets/addOrEditScreen.dart';
-import 'package:steady/widgets/quoteWidget.dart';
-import 'package:steady/widgets/showQuoteDialogue.dart';
 import '../../widgets/habitCard.dart';
 import '../../models/habit.dart';
 import '../../models/quote.dart';
 import '../../utils/app_pref.dart';
-import '../../utils/enums.dart';
+import '../../repository/quotes_repos.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key, required this.habits});
@@ -29,41 +27,24 @@ class _HomescreenState extends State<Homescreen> {
 
   Future<void> _loadSavedQuote() async {
     final savedMood = await AppPrefs.getSelectedMood();
+    print('Saved mood: $savedMood');
     if (savedMood != null && mounted) {
-      setState(() {
-        _savedQuote = _getMoodQuote(savedMood);
-      });
+      final quote = await QuotesRepository.getQuoteByMood(savedMood);
+      print('Loaded quote: ${quote?.text}');
+      if (quote != null) {
+        setState(() {
+          _savedQuote = quote;
+        });
+      } else {
+        // Fallback: load any quote if mood-based loading fails
+        final randomQuote = await QuotesRepository.getRandomQuote();
+        if (randomQuote != null && mounted) {
+          setState(() {
+            _savedQuote = randomQuote;
+          });
+        }
+      }
     }
-  }
-
-  Quote _getMoodQuote(String mood) {
-    final moodQuotes = {
-      MoodType.motivate.title: Quote(
-        id: '1',
-        text: "The only way to do great work is to love what you do.",
-        author: "Steve Jobs",
-        createdAt: DateTime.now(),
-      ),
-      MoodType.tired.title: Quote(
-        id: '2',
-        text: "Don't watch the clock; do what it does. Keep going.",
-        author: "Sam Levenson",
-        createdAt: DateTime.now(),
-      ),
-      MoodType.normal.title: Quote(
-        id: '3',
-        text: "Low energy is okay. Start small today.",
-        author: "Steady",
-        createdAt: DateTime.now(),
-      ),
-      MoodType.stressed.title: Quote(
-        id: '4',
-        text: "Every accomplishment starts with the decision to try.",
-        author: "John F. Kennedy",
-        createdAt: DateTime.now(),
-      ),
-    };
-    return moodQuotes[mood] ?? moodQuotes[MoodType.normal.title]!;
   }
 
   /// Get only habits that should appear today

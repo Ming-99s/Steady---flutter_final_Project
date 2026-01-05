@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "text": "The only way to do great work is to love what you do.",
+    "author": "Steve Jobs",
+    "createdAt": "2025-01-06T08:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "text": "Don't watch the clock; do what it does. Keep going.",
+    "author": "Sam Levenson",
+    "createdAt": "2025-01-06T08:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "text": "Low energy is okay. Start small today.",
+    "author": "Steady",
+    "createdAt": "2025-01-06T08:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "text": "Every accomplishment starts with the decision to try.",
+    "author": "John F. Kennedy",
+    "createdAt": "2025-01-06T08:00:00.000Z"
+  }
+]

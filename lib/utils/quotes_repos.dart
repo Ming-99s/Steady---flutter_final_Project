@@ -46,7 +46,12 @@ class QuotesRepository {
 
   // Helper method to map mood titles to quote indices
   static int _getMoodIndex(String moodTitle) {
-    const moodMap = {'Motivation': 0, 'Tired': 1, 'Okay': 2, 'Stressed': 3};
+    const moodMap = {
+      'Motivate': 0,
+      'Tired': 1,
+      'Normal': 2,
+      'Stressed': 3,
+    };
     return moodMap[moodTitle] ?? -1;
   }
 }
