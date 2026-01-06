@@ -40,7 +40,6 @@ class _HomeState extends State<Home> {
       ),
 
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(top: 10),
         decoration: BoxDecoration(
           color: AppColors.getSecondary(context),
           boxShadow: [

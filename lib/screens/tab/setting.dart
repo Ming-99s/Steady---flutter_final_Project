@@ -20,7 +20,7 @@ class _SettingState extends State<Setting> {
     return SafeArea(
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
           color: AppColors.getSecondary(context), // background like appbar
           boxShadow: [
@@ -72,7 +72,7 @@ class _SettingState extends State<Setting> {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
+                          horizontal: 20,
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
@@ -96,7 +96,6 @@ class _SettingState extends State<Setting> {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

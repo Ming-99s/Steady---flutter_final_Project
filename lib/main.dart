@@ -5,7 +5,6 @@ import 'package:steady/screens/moodScreen.dart';
 import 'package:steady/screens/startScreen.dart';
 import 'package:steady/theme/theme_provider.dart';
 import './utils/app_pref.dart';
-import 'package:device_preview/device_preview.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './models/dialyProgress.dart';
 import './models/habit.dart';
@@ -24,8 +23,7 @@ void main() async {
   await Hive.openBox<DailyProgress>('daily_progress');
 
   runApp(
-    DevicePreview(
-      builder: (context) => ChangeNotifierProvider(
+      ChangeNotifierProvider(
         create: (_) => ThemeProvider(),
         child: Steady(
           isFirstLaunch: isFirstLaunch,
@@ -33,7 +31,6 @@ void main() async {
           isMoodDoneToday: isMoodDoneToday,
         ),
       ),
-    ),
   );
 }
 
