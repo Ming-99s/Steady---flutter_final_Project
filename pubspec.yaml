@@ -32,6 +32,7 @@ dependencies:
   uuid: ^4.5.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_launcher_icons: ^0.10.0
   percent_indicator: ^4.2.5
   line_awesome_flutter: ^3.0.1
   shared_preferences: ^2.2.2
@@ -63,8 +64,8 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/app_logo.png"
-  
+  image_path: "assets/images/logo.jpg"
+
 flutter:
   assets:
     - assets/images/
