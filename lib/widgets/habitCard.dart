@@ -110,7 +110,7 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
           onLongPressEnd: (_) => _stopHold(),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.secondary,
+              color: AppColors.getSecondary(context),
               shape: BoxShape.circle,
             ),
             child: CircularPercentIndicator(
@@ -118,22 +118,22 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
               lineWidth: 8,
               percent: totalProgress,
               circularStrokeCap: CircularStrokeCap.round,
-              backgroundColor: AppColors.offNav,
-              progressColor: AppColors.primary,
+              backgroundColor: AppColors.getOffNav(context),
+              progressColor: AppColors.getPrimary(context),
               center: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     iconMap[widget.habit.iconName] ?? Icons.help,
                     size: 50,
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimary(context),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "$currentStep/$maxSteps",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimary(context),
                     ),
                   ),
                 ],
