@@ -37,7 +37,7 @@ class Moodwidget extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : Colors.black,
+                color: isSelected ? AppColors.getPrimary(context) : Colors.white,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),

@@ -37,17 +37,17 @@ class HabitDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text(
+        title: Text(
           'Progress',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: AppColors.getTextPrimary(context),
           ),
         ),
 
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.textPrimary),
+            icon: Icon(Icons.edit, color: AppColors.getTextPrimary(context)),
             onPressed: () => showModalBottomSheet(
               context: context,
               backgroundColor: AppColors.getBackground(context),
@@ -64,7 +64,7 @@ class HabitDetailScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 15),
             child: IconButton(
-              icon: const Icon(Icons.delete, color: AppColors.textPrimary),
+              icon: Icon(Icons.delete, color: AppColors.getTextPrimary(context)),
               onPressed: () async {
                 final confirmed = await showDeleteConfirmDialog(context);
                 if (confirmed == true) {

@@ -135,9 +135,9 @@ Color _cellColor(DateTime date) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: AppColors.getSecondary(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.getBorder(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,10 +163,10 @@ Color _cellColor(DateTime date) {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(_habit.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary)),
+                                  color: AppColors.getTextPrimary(context))),
                           if (_habit.description?.isNotEmpty == true)
                             Text(_habit.description!,
                                 style: const TextStyle(
