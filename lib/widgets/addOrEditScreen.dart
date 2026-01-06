@@ -6,31 +6,31 @@ import '../utils/iconData.dart';
 import '../utils/enums.dart';
 import '../utils/helper.dart';
 import '../widgets/selectIcon.dart';
-import '../repository/habitGlobal.dart'; // Global habitRepo
+import '../repository/habitGlobal.dart';
 import '../models/habit.dart';
 
 class AddHabitScreen extends StatefulWidget {
-  const AddHabitScreen({super.key, this.existingHabit});
-
+  const AddHabitScreen({super.key, this.existingHabit, required this.onSave});
   final Habit? existingHabit;
-  
+  final Function() onSave;
+
   @override
   State<AddHabitScreen> createState() => _AddHabitScreenState();
 }
 
 class _AddHabitScreenState extends State<AddHabitScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _timePerDayController = TextEditingController();
-  late Habit _habit;
+
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _timePerDayController = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
   Schedule _selectedLoop = Schedule.everyday;
   Set<String> _selectedDays = {};
   String? _selectedIconKey;
 
-  final List<String> _daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 
   bool get isEditMode => widget.existingHabit != null;
 
@@ -41,56 +41,19 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   @override
   void initState() {
     super.initState();
-    habitRepo.addListener(_onHabitChanged);
-    if(isEditMode){
-
-      _loadHabit();
+    if (isEditMode) {
+       _loadHabitForEdit(widget.existingHabit!);
     }
   }
 
-  void _onHabitChanged() {
-    _loadHabit();
-  }
 
-void _loadHabit() {
-  if (!isEditMode) return;
-  final updated = habitRepo.getHabit(widget.existingHabit!.habitId);
-  if (updated == null) return;
-
-  _habit = updated;
-
-  _titleController.text = _habit.title;
-  _descriptionController.text = _habit.description ?? '';
-  _timePerDayController.text = _habit.timePerDay.toString();
-  _selectedDate = _habit.startDate;
-  _selectedLoop = getScheduleType(_habit.schedule);
-  _selectedDays =
-  _habit.scheduleIndices.map((d) => dayAbbrInt(d)).toSet();
-  _selectedIconKey = _habit.iconName;
-
-  if (mounted) setState(() {});
-}
-
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _timePerDayController.dispose();
-    super.dispose();
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
-    ];
-    return months[month - 1];
-  }
 
   Widget _buildDayButton(String day) {
     final isSelected = _selectedDays.contains(day);
     return GestureDetector(
-      onTap: () => setState(() => isSelected ? _selectedDays.remove(day) : _selectedDays.add(day)),
+      onTap: () => setState(
+        () => isSelected ? _selectedDays.remove(day) : _selectedDays.add(day),
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
@@ -105,8 +68,8 @@ void _loadHabit() {
             fontSize: 10,
             color: isSelected
                 ? (Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : AppColors.secondary)
+                      ? Colors.white
+                      : AppColors.secondary)
                 : AppColors.getTextPrimary(context),
             fontWeight: FontWeight.w800,
           ),
@@ -115,7 +78,26 @@ void _loadHabit() {
     );
   }
 
-  Future<void> _createOrUpdateHabit() async {
+void _loadHabitForEdit(Habit habit) {
+  _titleController.text = habit.title;
+  _descriptionController.text = habit.description ?? '';
+  _timePerDayController.text = habit.timePerDay.toString();
+  _selectedDate = habit.startDate;
+  _selectedLoop = getScheduleType(habit.schedule);
+  _selectedDays = habit.scheduleIndices.map(dayAbbrInt).toSet();
+  _selectedIconKey = habit.iconName;
+}
+
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _timePerDayController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedLoop == Schedule.specificDay && _selectedDays.isEmpty) {
@@ -123,71 +105,77 @@ void _loadHabit() {
       return;
     }
 
-    final timePerDay = int.tryParse(_timePerDayController.text.trim());
+    final timePerDay = int.tryParse(_timePerDayController.text);
     if (timePerDay == null || timePerDay < 1 || timePerDay > 99) {
       _showSnackBar("Time per day must be between 1 and 99");
       return;
     }
 
-    List<Day> scheduleDays = [];
+    final scheduleDays = _buildScheduleDays();
 
-    if (_selectedLoop == Schedule.everyday) {
-      scheduleDays = Day.values;
-    } else if (_selectedLoop == Schedule.weekend) {
-      scheduleDays = [Day.saturday, Day.sunday];
-    } else if (_selectedLoop == Schedule.specificDay) {
-      scheduleDays = _selectedDays.map((abbr) {
-        final lower = abbr.toLowerCase();
-        return Day.values.firstWhere((d) => d.name.startsWith(lower));
-      }).toList();
+    if (isEditMode) {
+      await _updateHabit(timePerDay, scheduleDays);
+    } else {
+      await _createHabit(timePerDay, scheduleDays);
     }
-    final List<int> scheduleInts = scheduleDays.map((d) => d.index).toList();
 
-    try {
-      if (isEditMode) {
+    if (mounted) {
+    Navigator.pop(context);
+  }
+  }
+
+  List<Day> _buildScheduleDays() {
+    if (_selectedLoop == Schedule.everyday) {
+      return Day.values;
+    }
+    if (_selectedLoop == Schedule.weekend) {
+      return [Day.saturday, Day.sunday];
+    }
+    return _selectedDays.map((abbr) {
+      return Day.values.firstWhere(
+        (d) => d.name.startsWith(abbr.toLowerCase()),
+      );
+    }).toList();
+  }
+
+  Future<void> _createHabit(int timePerDay, List<Day> scheduleDays) async {
+    await habitRepo.createHabit(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
+      timePerDay: timePerDay,
+      iconName: _selectedIconKey ?? 'question_circle',
+      schedule: scheduleDays,
+      startDate: _selectedDate,
+    );
+    widget.onSave();
+    _showSnackBar("Habit created successfully!");
+  }
+
+Future<void> _updateHabit(int timePerDay, List<Day> scheduleDays) async {
   final updatedHabit = Habit(
-    habitId: widget.existingHabit!.habitId, // keep the same ID
+    habitId: widget.existingHabit!.habitId,
     title: _titleController.text.trim(),
-    description: _descriptionController.text.trim().isNotEmpty
-        ? _descriptionController.text.trim()
-        : null,
+    description: _descriptionController.text.trim().isEmpty
+        ? null
+        : _descriptionController.text.trim(),
     timePerDay: timePerDay,
     iconName: _selectedIconKey ?? 'question_circle',
-    scheduleIndices: scheduleInts,
+    scheduleIndices: scheduleDays.map((d) => d.index).toList(),
     startDate: _selectedDate,
-
   );
 
   await habitRepo.updateHabit(updatedHabit);
+
+  widget.onSave();
   _showSnackBar("Habit updated successfully!");
-} 
-else {
-        await habitRepo.createHabit(
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isNotEmpty
-              ? _descriptionController.text.trim()
-              : null,
-          timePerDay: timePerDay,
-          iconName: _selectedIconKey ?? 'question_circle',
-          schedule: scheduleDays,
-          startDate: _selectedDate,
-        );
-        _showSnackBar("Habit created successfully!");
-      }
+}
 
-      if (mounted) Navigator.pop(context);
-    } catch (e) {
-      if (mounted) {
-        print(e);
-        _showSnackBar("Failed to save habit. Please try again.");
-      }
-    }
-  }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+
+  void _showSnackBar(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -207,17 +195,20 @@ else {
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     "Dismiss",
-                    style: TextStyle(color: AppColors.getTextSecondary(context)),
+                    style: TextStyle(
+                      color: AppColors.getTextSecondary(context),
+                    ),
                   ),
                 ),
                 TextButton(
-                  onPressed: _createOrUpdateHabit,
+                  onPressed: _submit,
                   child: Text(
                     isEditMode ? "Save" : "Add",
                     style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.getTextSecondary(context)),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.getTextSecondary(context),
+                    ),
                   ),
                 ),
               ],
@@ -227,7 +218,10 @@ else {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -270,18 +264,24 @@ else {
                                 hintText: "Title",
                                 border: InputBorder.none,
                                 hintStyle: TextStyle(
-                                  color: AppColors.getTextPrimary(context).withOpacity(0.5),
+                                  color: AppColors.getTextPrimary(
+                                    context,
+                                  )
                                 ),
                               ),
                               style: TextStyle(
                                 fontSize: 16,
                                 color: AppColors.getTextPrimary(context),
                               ),
-                              validator: (value) => value?.trim().isEmpty ?? true
+                              validator: (value) =>
+                                  value?.trim().isEmpty ?? true
                                   ? "Please enter a habit title"
                                   : null,
                             ),
-                            Divider(height: 20, color: AppColors.getBorder(context)),
+                            Divider(
+                              height: 20,
+                              color: AppColors.getBorder(context),
+                            ),
 
                             // Description
                             TextField(
@@ -290,7 +290,9 @@ else {
                                 hintText: "Description",
                                 border: InputBorder.none,
                                 hintStyle: TextStyle(
-                                  color: AppColors.getTextPrimary(context).withOpacity(0.5),
+                                  color: AppColors.getTextPrimary(
+                                    context,
+                                  )
                                 ),
                               ),
                               style: TextStyle(
@@ -298,7 +300,10 @@ else {
                                 color: AppColors.getTextPrimary(context),
                               ),
                             ),
-                            Divider(height: 20, color: AppColors.getBorder(context)),
+                            Divider(
+                              height: 20,
+                              color: AppColors.getBorder(context),
+                            ),
 
                             // Time per day
                             Row(
@@ -327,19 +332,26 @@ else {
                                       border: InputBorder.none,
                                       contentPadding: EdgeInsets.zero,
                                       suffixText: " time",
-                                      suffixStyle: TextStyle(color: Colors.grey),
+                                      suffixStyle: TextStyle(
+                                        color: Colors.grey,
+                                      ),
                                     ),
                                     validator: (value) {
-                                      if (value == null || value.trim().isEmpty) return "Required";
+                                      if (value == null || value.trim().isEmpty)
+                                        return "Required";
                                       final n = int.tryParse(value);
-                                      if (n == null || n < 1 || n > 99) return "1-99";
+                                      if (n == null || n < 1 || n > 99)
+                                        return "1-99";
                                       return null;
                                     },
                                   ),
                                 ),
                               ],
                             ),
-                            Divider(height: 20, color: AppColors.getBorder(context)),
+                            Divider(
+                              height: 20,
+                              color: AppColors.getBorder(context),
+                            ),
 
                             // Start Date
                             Row(
@@ -361,26 +373,34 @@ else {
                                       lastDate: DateTime(2100),
                                       builder: (context, child) {
                                         return Theme(
-                                          data: Theme.of(context).brightness == Brightness.dark
+                                          data:
+                                              Theme.of(context).brightness ==
+                                                  Brightness.dark
                                               ? ThemeData.dark()
                                               : ThemeData.light(),
                                           child: child!,
                                         );
                                       },
                                     );
-                                    if (picked != null) setState(() => _selectedDate = picked);
+                                    if (picked != null)
+                                      setState(() => _selectedDate = picked);
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: AppColors.getBackground(context),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
-                                      "${_selectedDate.day} ${_getMonthName(_selectedDate.month)} ${_selectedDate.year}",
+                                      "${_selectedDate.day} ${getMonthName(_selectedDate.month)} ${_selectedDate.year}",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        color: AppColors.getTextPrimary(context),
+                                        color: AppColors.getTextPrimary(
+                                          context,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -405,7 +425,10 @@ else {
                       const SizedBox(height: 5),
 
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.getCardBackground(context),
                           borderRadius: BorderRadius.circular(10),
@@ -421,20 +444,31 @@ else {
                               ),
                             ),
                             DropdownButton<Schedule>(
-                              dropdownColor: AppColors.getCardBackground(context),
+                              dropdownColor: AppColors.getCardBackground(
+                                context,
+                              ),
                               value: _selectedLoop,
                               underline: const SizedBox(),
-                              icon: Icon(Icons.unfold_more, color: AppColors.getOffNav(context)),
+                              icon: Icon(
+                                Icons.unfold_more,
+                                color: AppColors.getOffNav(context),
+                              ),
                               onChanged: (value) {
                                 if (value != null) {
                                   setState(() {
                                     _selectedLoop = value;
-                                    if (value != Schedule.specificDay) _selectedDays.clear();
+                                    if (value != Schedule.specificDay)
+                                      _selectedDays.clear();
                                   });
                                 }
                               },
                               items: Schedule.values
-                                  .map((e) => DropdownMenuItem(value: e, child: Text(scheduleLabel(e))))
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(scheduleLabel(e)),
+                                    ),
+                                  )
                                   .toList(),
                             ),
                           ],
@@ -462,8 +496,11 @@ else {
                               ),
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: _daysOfWeek.map(_buildDayButton).toList(),
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: daysOfWeek
+                                    .map(_buildDayButton)
+                                    .toList(),
                               ),
                             ],
                           ),
@@ -484,7 +521,10 @@ else {
                       const SizedBox(height: 5),
 
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.getCardBackground(context),
                           borderRadius: BorderRadius.circular(10),
@@ -501,26 +541,38 @@ else {
                             ),
                             GestureDetector(
                               onTap: () async {
-                                final result = await showModalBottomSheet<String>(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: AppColors.getCardBackground(context),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                                  ),
-                                  builder: (_) =>
-                                      IconSelectionBottomSheet(selectedKey: _selectedIconKey),
-                                );
-                                if (result != null) setState(() => _selectedIconKey = result);
+                                final result =
+                                    await showModalBottomSheet<String>(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor:
+                                          AppColors.getCardBackground(context),
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(20),
+                                        ),
+                                      ),
+                                      builder: (_) => IconSelectionBottomSheet(
+                                        selectedKey: _selectedIconKey,
+                                      ),
+                                    );
+                                if (result != null)
+                                  setState(() => _selectedIconKey = result);
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: AppColors.getBackground(context),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.getBorder(context)),
+                                  border: Border.all(
+                                    color: AppColors.getBorder(context),
+                                  ),
                                 ),
-                                child: Icon(_currentIcon, size: 28, color: AppColors.getTextPrimary(context)),
+                                child: Icon(
+                                  _currentIcon,
+                                  size: 28,
+                                  color: AppColors.getTextPrimary(context),
+                                ),
                               ),
                             ),
                           ],
