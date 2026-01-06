@@ -5,8 +5,9 @@ import '../../theme/appColor.dart';
 
 class Trackerscreen extends StatelessWidget {
   final List<Habit> habits;
+  final Function() onRefresh;
 
-  const Trackerscreen({super.key, required this.habits});
+  const Trackerscreen({super.key, required this.habits,required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,7 @@ class Trackerscreen extends StatelessWidget {
                         children: habits.map((habit) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 24),
-                            child: HabitProgress(habit: habit,key: ValueKey(habit.habitId),),
+                            child: HabitProgress(habit: habit,key: ValueKey(habit.habitId,),onRefresh:onRefresh ,),
                           );
                         }).toList(),
                       ),

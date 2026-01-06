@@ -9,8 +9,10 @@ import '../../utils/app_pref.dart';
 import '../../repository/quotes_repos.dart';
 
 class Homescreen extends StatefulWidget {
-  const Homescreen({super.key, required this.habits});
+  const Homescreen({super.key, required this.habits,required this.onRefresh});
   final List<Habit> habits;
+  final Function() onRefresh;
+
 
   @override
   State<Homescreen> createState() => _HomescreenState();
@@ -122,7 +124,7 @@ List<Habit> get _todayHabits {
                         ),
                         isScrollControlled: true,
                         useSafeArea: true,
-                        builder: (_) => AddHabitScreen(),
+                        builder: (_) => AddHabitScreen(onSave: widget.onRefresh,),
                       ),
                     ),
                   ],
@@ -136,57 +138,6 @@ List<Habit> get _todayHabits {
                   ),
                 ),
 
-                //  Test
-                // child: TextButton(
-                //   onPressed: () {
-                //     showDialog(
-                //       context: context,
-                //       builder: (BuildContext context) {
-                //         return QuoteWidget();
-                //       },
-                //     );
-                //   },
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Row(
-                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //         children: [
-                //           const Text(
-                //             'Habits',
-                //             style: TextStyle(
-                //               fontWeight: FontWeight.w800,
-                //               fontSize: 30,
-                //             ),
-                //           ),
-                //           IconButton(
-                //             icon: Icon(
-                //               LineAwesomeIcons.plus_solid,
-                //               size: 30,
-                //               fontWeight: FontWeight.w900,
-                //               color: AppColors.getTextPrimary(context),
-                //             ),
-                //             onPressed: () => showModalBottomSheet(
-                //               context: context,
-                //               backgroundColor: AppColors.getBackground(context),
-                //               shape: const RoundedRectangleBorder(
-                //                 borderRadius: BorderRadius.vertical(
-                //                   top: Radius.circular(10),
-                //                 ),
-                //               ),
-                //               isScrollControlled: true,
-                //               useSafeArea: true,
-                //               builder: (_) => AddHabitScreen(),
-                //             ),
-                //           ),
-                //         ],
-                //       ),
-                //       Text(
-                //         'Low energy is okay. Start small today.',
-                //         style: TextStyle(color: AppColors.getTextPrimary(context)),
-                //       ),
-                //     ],
-                //   ),
               ],
             ),
           ),
