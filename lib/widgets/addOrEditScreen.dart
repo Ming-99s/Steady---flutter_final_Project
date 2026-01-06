@@ -13,7 +13,7 @@ class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key, this.existingHabit});
 
   final Habit? existingHabit;
-
+  
   @override
   State<AddHabitScreen> createState() => _AddHabitScreenState();
 }
@@ -23,6 +23,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _timePerDayController = TextEditingController();
+  late Habit _habit;
 
   DateTime _selectedDate = DateTime.now();
   Schedule _selectedLoop = Schedule.everyday;
@@ -40,18 +41,36 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   @override
   void initState() {
     super.initState();
+    habitRepo.addListener(_onHabitChanged);
+    if(isEditMode){
 
-    if (isEditMode) {
-      final habit = widget.existingHabit!;
-      _titleController.text = habit.title;
-      _descriptionController.text = habit.description ?? '';
-      _timePerDayController.text = habit.timePerDay.toString();
-      _selectedDate = habit.startDate;
-      _selectedLoop = getScheduleType(habit.schedule); // Convert list to enum
-      _selectedDays = habit.schedule.map((d) => dayAbbr(d)).toSet();
-      _selectedIconKey = habit.iconName;
+      _loadHabit();
     }
   }
+
+  void _onHabitChanged() {
+    _loadHabit();
+  }
+
+void _loadHabit() {
+  if (!isEditMode) return;
+  final updated = habitRepo.getHabit(widget.existingHabit!.habitId);
+  if (updated == null) return;
+
+  _habit = updated;
+
+  _titleController.text = _habit.title;
+  _descriptionController.text = _habit.description ?? '';
+  _timePerDayController.text = _habit.timePerDay.toString();
+  _selectedDate = _habit.startDate;
+  _selectedLoop = getScheduleType(_habit.schedule);
+  _selectedDays =
+  _habit.scheduleIndices.map((d) => dayAbbrInt(d)).toSet();
+  _selectedIconKey = _habit.iconName;
+
+  if (mounted) setState(() {});
+}
+
 
   @override
   void dispose() {
