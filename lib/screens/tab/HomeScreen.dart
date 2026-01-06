@@ -47,14 +47,28 @@ class _HomescreenState extends State<Homescreen> {
     }
   }
 
-  /// Get only habits that should appear today
-  List<Habit> get _todayHabits {
-    final today = DateTime.now().weekday; // 1=Mon, 7=Sun
-    return widget.habits.where((habit) {
-      // habit.scheduleIndices is List<int> of Day index (0=Mon)
-      return habit.scheduleIndices.contains(today - 1);
-    }).toList();
-  }
+List<Habit> get _todayHabits {
+  final now = DateTime.now();
+  final todayWeekday = now.weekday - 1; // 0=Mon
+
+  // Normalize today to date-only (no time)
+  final todayDate = DateTime(now.year, now.month, now.day);
+
+  return widget.habits.where((habit) {
+    final habitStartDate = DateTime(
+      habit.startDate.year,
+      habit.startDate.month,
+      habit.startDate.day,
+    );
+
+    if (habitStartDate.isAfter(todayDate)) {
+      return false;
+    }
+
+    return habit.scheduleIndices.contains(todayWeekday);
+  }).toList();
+}
+
 
   @override
   Widget build(BuildContext context) {

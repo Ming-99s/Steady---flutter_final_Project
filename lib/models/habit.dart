@@ -23,7 +23,7 @@ class Habit extends HiveObject {
   final String iconName;
 
   @HiveField(5)
-  final List<int> scheduleIndices;
+  List<int> scheduleIndices;
 
   @HiveField(6)
   final DateTime startDate;
