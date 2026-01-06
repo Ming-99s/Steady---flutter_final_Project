@@ -76,6 +76,7 @@ class _HomeState extends State<Home> {
           unselectedItemColor: AppColors.offNav,
           onTap: (index) {
             setState(() {
+              
               currentTab = AllTab.values[index];
             });
           },

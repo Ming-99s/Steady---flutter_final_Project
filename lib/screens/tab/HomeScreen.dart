@@ -7,7 +7,6 @@ import '../../models/habit.dart';
 import '../../models/quote.dart';
 import '../../utils/app_pref.dart';
 import '../../repository/quotes_repos.dart';
-
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key, required this.habits,required this.onRefresh});
   final List<Habit> habits;
@@ -20,6 +19,7 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   Quote? _savedQuote;
+
 
   @override
   void initState() {
