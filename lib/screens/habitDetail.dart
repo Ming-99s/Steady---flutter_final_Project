@@ -9,9 +9,25 @@ import '../widgets/addOrEditScreen.dart';
 import '../utils/enums.dart';
 import '../repository/habitGlobal.dart';
 
-class HabitDetailScreen extends StatelessWidget {
-  const HabitDetailScreen({super.key, required this.habit});
+class HabitDetailScreen extends StatefulWidget {
+  const HabitDetailScreen({
+    super.key,
+    required this.habit,
+    required this.onRefresh,
+  });
   final Habit habit;
+  final Function() onRefresh;
+
+  @override
+  State<HabitDetailScreen> createState() => _HabitDetailScreenState();
+}
+
+class _HabitDetailScreenState extends State<HabitDetailScreen> {
+  final GlobalKey<HabitProgressDetailState> _progressKey =
+      GlobalKey<HabitProgressDetailState>();
+  final GlobalKey<HighlightSchedulecardState> _scheduleKey =
+      GlobalKey<HighlightSchedulecardState>();
+
   @override
   Widget build(BuildContext context) {
     Future<bool?> showDeleteConfirmDialog(BuildContext context) {
@@ -48,34 +64,58 @@ class HabitDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.edit, color: AppColors.getTextPrimary(context)),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              backgroundColor: AppColors.getBackground(context),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-              ),
-              isScrollControlled: true,
-              useSafeArea: true,
-              builder: (BuildContext context) {
-                return AddHabitScreen(existingHabit: habit);
-              },
-            ),
+            onPressed: () async {
+              final freshHabit = await habitRepo.getHabit(widget.habit.habitId);
+              if (freshHabit == null) return;
+
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: AppColors.getBackground(context),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+                ),
+                builder: (BuildContext context) {
+                  return AddHabitScreen(
+                    existingHabit: freshHabit,
+                    onSave: () async {
+                      // Reload again after save to update detail screen
+                      final updated = await habitRepo.getHabit(
+                        widget.habit.habitId,
+                      );
+                      if (updated != null && mounted) {
+                        setState(() {});
+                      }
+
+                      widget.onRefresh();
+                      _progressKey.currentState?.refresh();
+                      _scheduleKey.currentState?.refresh();
+                    },
+                  );
+                },
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.only(right: 15),
             child: IconButton(
-              icon: Icon(Icons.delete, color: AppColors.getTextPrimary(context)),
+              icon: Icon(
+                Icons.delete,
+                color: AppColors.getTextPrimary(context),
+              ),
               onPressed: () async {
                 final confirmed = await showDeleteConfirmDialog(context);
                 if (confirmed == true) {
                   await habitRepo.deleteHabit(
-                    habit.habitId,
+                    widget.habit.habitId,
                   ); // Delete from Hive
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Habit deleted')),
                   );
-                  Navigator.pop(context);
-
+                  widget.onRefresh();
+                  if (mounted) {
+                    Navigator.pop(context); // safe to pop after calling refresh
+                  }
                 }
               },
             ),
@@ -85,7 +125,7 @@ class HabitDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-        
+
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -97,9 +137,9 @@ class HabitDetailScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              HabitProgressDetail(habit: habit),
+              HabitProgressDetail(habit: widget.habit, key: _progressKey),
               SizedBox(height: 10),
-        
+
               const Text(
                 'HIGHLIGHTS',
                 style: TextStyle(
@@ -112,7 +152,7 @@ class HabitDetailScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Highlightcard(
-                      habit: habit,
+                      habit: widget.habit,
                       type: HighlightType.currentStreak,
                       icon: LineAwesomeIcons.fire_extinguisher_solid,
                       title: 'Current Streak',
@@ -121,7 +161,7 @@ class HabitDetailScreen extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Highlightcard(
-                      habit: habit,
+                      habit: widget.habit,
                       type: HighlightType.bestStreak,
                       icon: LineAwesomeIcons.trophy_solid,
                       title: 'Best Streak',
@@ -130,25 +170,24 @@ class HabitDetailScreen extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 12),
-        
-                  Row(
-                    children: [
-                      Highlightcard(
-                        habit: habit,
-                        type: HighlightType.completionCount,
-                        icon: LineAwesomeIcons.check_circle_solid,
-                        title: 'Completion',
-                      ),
-                                        SizedBox(width: 12),
+
+              Row(
+                children: [
+                  Highlightcard(
+                    habit: widget.habit,
+                    type: HighlightType.completionCount,
+                    icon: LineAwesomeIcons.check_circle_solid,
+                    title: 'Completion',
+                  ),
+                  SizedBox(width: 12),
                   HighlightSchedulecard(
-                    habit: habit,
+                    habit: widget.habit,
                     icon: LineAwesomeIcons.calendar,
                     title: 'Streak Goal',
-                    key: ValueKey(habit.habitId),
-              ),
-                    ],
+                    key: _scheduleKey,
                   ),
-
+                ],
+              ),
             ],
           ),
         ),

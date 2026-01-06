@@ -11,32 +11,49 @@ import '../repository/habitGlobal.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
 
+
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   AllTab currentTab = AllTab.home;
+    List<Habit> habits = [];
 
   @override
+  void initState() {
+    super.initState();
+    _loadHabits();
+  }
+
+  void _loadHabits() {
+    setState(() {
+      habits = habitRepo.getAllHabits();
+    });
+  }
+
+  void refreshHabits() {
+    _loadHabits();
+  }
+
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.getSecondary(context),
 
-      body: AnimatedBuilder(
-        animation: habitRepo,
-        builder: (context, _) {
-          final List<Habit> habits = habitRepo.getAllHabits();
-
-          return IndexedStack(
-            index: currentTab.index,
-            children: [
-              Homescreen(habits: habits),
-              Trackerscreen(habits: habits),
-              const Setting(),
-            ],
-          );
-        },
+      body: IndexedStack(
+        index: currentTab.index,
+        children: [
+          Homescreen(
+            habits: habits,
+            onRefresh: refreshHabits,
+          ),
+          Trackerscreen(
+            habits: habits,
+            onRefresh: refreshHabits,
+          ),
+          const Setting(),
+        ],
       ),
 
       bottomNavigationBar: Container(
@@ -51,7 +68,6 @@ class _HomeState extends State<Home> {
           ],
         ),
         child: BottomNavigationBar(
-          enableFeedback: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
