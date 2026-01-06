@@ -158,7 +158,7 @@ class _HighlightSchedulecardState extends State<HighlightSchedulecard> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  Text(_habit.title, style: const TextStyle(fontSize: 15)),
+                  const Text('Schedule', style: const TextStyle(fontSize: 15)),
                 ],
               ),
               Column(
