@@ -18,24 +18,26 @@ class HighlightSchedulecard extends StatefulWidget {
   final String title;
 
   @override
-  State<HighlightSchedulecard> createState() => _HighlightSchedulecardState();
+  State<HighlightSchedulecard> createState() => HighlightSchedulecardState();
 }
 
-class _HighlightSchedulecardState extends State<HighlightSchedulecard> {
+class HighlightSchedulecardState extends State<HighlightSchedulecard> {
   late Habit _habit;
 
   @override
   void initState() {
     super.initState();
-    _habit = widget.habit; // local habit copy
+    _habit = widget.habit;
+    
+  }
 
-    // Listen to habitRepo for updates
-    habitRepo.addListener(_loadHabit);
+  void refresh(){
+      _loadHabit();
   }
 
   @override
   void dispose() {
-    habitRepo.removeListener(_loadHabit);
+    // habitRepo.removeListener(_loadHabit);
     super.dispose();
   }
 
@@ -52,9 +54,9 @@ class _HighlightSchedulecardState extends State<HighlightSchedulecard> {
 
   void _updateSchedule(List<int> newSchedule) {
     setState(() {
-      _habit.scheduleIndices = List.from(newSchedule); // update local habit
+      _habit.scheduleIndices = List.from(newSchedule); 
     });
-    habitRepo.updateHabit(_habit); // notify repo if needed
+    habitRepo.updateHabit(_habit); 
   }
 
   Widget _buildDayButtonInt(int day, BuildContext context, List<int> activeDays) {

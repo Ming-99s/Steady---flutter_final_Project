@@ -7,7 +7,8 @@ import '../screens/habitDetail.dart';
 
 class HabitProgress extends StatefulWidget {
   final Habit habit;
-  const HabitProgress({super.key, required this.habit});
+  final Function() onRefresh;
+  const HabitProgress({super.key, required this.habit,required this.onRefresh});
 
   @override
   State<HabitProgress> createState() => _HabitProgressState();
@@ -105,7 +106,7 @@ Color _cellColor(DateTime date) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => HabitDetailScreen(habit: widget.habit),
+            builder: (_) => HabitDetailScreen(habit: widget.habit,onRefresh:widget.onRefresh ,),
           ),
         );
       },

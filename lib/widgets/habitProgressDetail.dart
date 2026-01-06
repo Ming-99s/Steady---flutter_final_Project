@@ -9,13 +9,13 @@ import '../utils/iconData.dart';
 
 class HabitProgressDetail extends StatefulWidget {
   final Habit habit;
-  const HabitProgressDetail({super.key, required this.habit});
+  const HabitProgressDetail({super.key, required this.habit,});
 
   @override
-  State<HabitProgressDetail> createState() => _HabitProgressDetailState();
+  State<HabitProgressDetail> createState() => HabitProgressDetailState();
 }
 
-class _HabitProgressDetailState extends State<HabitProgressDetail> {
+class HabitProgressDetailState extends State<HabitProgressDetail> {
   final repo = dailyProgressRepo;
   late Habit _habit;
   final Map<DateTime, int> _progressMap = {};
@@ -28,9 +28,6 @@ class _HabitProgressDetailState extends State<HabitProgressDetail> {
     _loadProgress();
     _loadHabit();
 
-    // Listen to updates
-    repo.addListener(_loadProgress);
-    habitRepo.addListener(_loadHabit);
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToToday());
   }
@@ -38,7 +35,6 @@ class _HabitProgressDetailState extends State<HabitProgressDetail> {
   @override
   void dispose() {
     repo.removeListener(_loadProgress);
-    habitRepo.removeListener(_loadHabit);
     _scrollController.dispose();
     super.dispose();
   }
@@ -51,6 +47,13 @@ class _HabitProgressDetailState extends State<HabitProgressDetail> {
       });
     }
   }
+
+void refresh() {
+  setState(() {
+    _loadHabit();
+  });
+}
+
 
   void _loadProgress() {
     final all = repo.getAllForHabit(_habit.habitId);
@@ -73,25 +76,22 @@ class _HabitProgressDetailState extends State<HabitProgressDetail> {
   }
 
 Color _cellColor(DateTime date) {
-  final today = DateTime.now();
-  final todayKey = DateTime(today.year, today.month, today.day);
-
-  if (date.isAfter(todayKey)) return AppColors.border;
-
-  final habitStart = DateTime(
-    widget.habit.startDate.year,
-    widget.habit.startDate.month,
-    widget.habit.startDate.day,
-  );
-  if (date.isBefore(habitStart)) return AppColors.border;
-
   final completed = _progressMap[date] ?? 0;
 
-  if (completed == 0) return AppColors.border;
-  if (completed < widget.habit.timePerDay / 2) return const Color(0xFF90CAF9);
+  final habitStart = DateTime(_habit.startDate.year, _habit.startDate.month, _habit.startDate.day);
+  final todayKey = DateTime.now(); 
 
-  return AppColors.textSecondary;
+  if (completed == 0 && (date.isAfter(todayKey) || date.isBefore(habitStart))) {
+    return AppColors.border;
+  }
+
+  if (completed > 0 && completed < _habit.timePerDay / 2) return const Color(0xFF90CAF9);
+
+  if (completed >= _habit.timePerDay / 2) return AppColors.textSecondary;
+
+  return AppColors.border;
 }
+
 
 
   bool _isCompleted(DateTime date) {

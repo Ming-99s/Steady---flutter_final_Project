@@ -28,13 +28,11 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
   void initState() {
     super.initState();
     _loadProgress();
-    repo.addListener(_loadProgress); // listen for repo changes
   }
 
   @override
   void dispose() {
     _timer?.cancel();
-    repo.removeListener(_loadProgress);
     super.dispose();
   }
 
@@ -42,7 +40,6 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
     DateTime today = DateTime.now();
     dailyProgress = repo.getToday(widget.habit.habitId);
 
-    // Create daily progress if missing
     if (dailyProgress == null) {
       dailyProgress = DailyProgress(
         habitId: widget.habit.habitId,
