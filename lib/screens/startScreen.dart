@@ -18,7 +18,15 @@ class Startscreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(flex: 4),
-                Image.asset('assets/images/illustration-container.png'),
+                Container(
+                  color: AppColors.getSecondary(context), // background color
+                  child: Image(
+                    image: const AssetImage(
+                      'assets/images/illustration-container.png',
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 30),
                 Text(
                   'Build habits without pressure',

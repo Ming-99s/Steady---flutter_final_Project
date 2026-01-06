@@ -105,7 +105,7 @@ class HighlightSchedulecard extends StatelessWidget {
                         resultSchedule,
                         style: TextStyle(
                           fontSize: 20,
-                          color: AppColors.textPrimary,
+                          color: AppColors.getTextPrimary(context),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
