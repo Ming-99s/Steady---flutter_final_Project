@@ -1,14 +1,10 @@
 class Quote {
   final String id;
   final String text;
-  final String author;
-  final DateTime createdAt;
 
   Quote({
     required this.id,
     required this.text,
-    required this.author,
-    required this.createdAt,
   });
 
   // Factory constructor to create Quote from JSON
@@ -16,8 +12,6 @@ class Quote {
     return Quote(
       id: json['id'] as String,
       text: json['text'] as String,
-      author: json['author'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 
@@ -26,8 +20,6 @@ class Quote {
     return {
       'id': id,
       'text': text,
-      'author': author,
-      'createdAt': createdAt.toIso8601String(),
     };
   }
 }
