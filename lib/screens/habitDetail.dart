@@ -144,8 +144,7 @@ class HabitDetailScreen extends StatelessWidget {
                     habit: habit,
                     icon: LineAwesomeIcons.calendar,
                     title: 'Streak Goal',
-                    schedule: habit.scheduleIndices,
-        
+                    key: ValueKey(habit.habitId),
               ),
                     ],
                   ),

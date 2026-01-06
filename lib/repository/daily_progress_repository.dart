@@ -58,57 +58,71 @@ class DailyProgressRepository extends ChangeNotifier {
     notifyListeners();
   }
 
-  HabitProgress calculateHabitProgress(String habitId, List<int> schedule) {
-    final all =
-        getAllForHabit(
-            habitId,
-          ).where((p) => schedule.contains(p.date.weekday)).toList()
-          ..sort((a, b) => a.date.compareTo(b.date));
+HabitProgress calculateHabitProgress(String habitId, List<int> newSchedule) {
+  final all = getAllForHabit(habitId)..sort((a, b) => a.date.compareTo(b.date));
 
-    int currentStreak = 0;
-    int bestStreak = 0;
-    int completionCount = 0;
+  int currentStreak = 0;
+  int bestStreak = 0;
+  int completionCount = 0;
 
-    DateTime? previousDate;
+  DateTime? previousDate;
+  final today = DateTime.now();
 
-    for (final progress in all) {
+  for (final progress in all) {
+    // Count old entries as-is
+    if (progress.date.isBefore(today)) {
       if (progress.isCompleted) {
         completionCount++;
-
-        if (previousDate == null ||
-            progress.date.difference(previousDate).inDays ==
-                getNextScheduledDayGap(previousDate, schedule)) {
-          currentStreak++;
-        } else {
-          currentStreak = 1;
-        }
-
+        currentStreak++;
         bestStreak = bestStreak > currentStreak ? bestStreak : currentStreak;
-        previousDate = progress.date;
       } else {
-        previousDate = null;
         currentStreak = 0;
       }
+      previousDate = progress.date;
+      continue;
     }
 
-    return HabitProgress(
-      habitId: habitId,
-      currentStreak: currentStreak,
-      bestStreak: bestStreak,
-      completionCount: completionCount,
-    );
-  }
-
-  /// Helper to get number of days until the next scheduled day
-  int getNextScheduledDayGap(DateTime prev, List<int> schedule) {
-    // weekdays are 1..7
-    final sorted = [...schedule]..sort();
-    int prevWeekday = prev.weekday;
-
-    for (final day in sorted) {
-      if (day > prevWeekday) return day - prevWeekday;
+    // From today onward, use new schedule
+    if (!newSchedule.contains(progress.date.weekday)) {
+      previousDate = null; // skip non-scheduled days
+      continue;
     }
-    // wrap around the week
-    return 7 - prevWeekday + sorted.first;
+
+    if (progress.isCompleted) {
+      completionCount++;
+      if (previousDate == null ||
+          progress.date.difference(previousDate).inDays ==
+              getNextScheduledDayGap(previousDate, newSchedule)) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+
+      bestStreak = bestStreak > currentStreak ? bestStreak : currentStreak;
+      previousDate = progress.date;
+    } else {
+      previousDate = null;
+      currentStreak = 0;
+    }
   }
+
+  return HabitProgress(
+    habitId: habitId,
+    currentStreak: currentStreak,
+    bestStreak: bestStreak,
+    completionCount: completionCount,
+  );
+}
+
+int getNextScheduledDayGap(DateTime prev, List<int> schedule) {
+  final sorted = [...schedule]..sort();
+  int prevWeekday = prev.weekday;
+
+  for (final day in sorted) {
+    if (day > prevWeekday) return day - prevWeekday;
+  }
+  return 7 - prevWeekday + sorted.first;
+}
+
+
 }
