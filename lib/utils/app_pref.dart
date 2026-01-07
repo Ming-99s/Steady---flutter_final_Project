@@ -1,29 +1,31 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppPrefs {
-  static const keyFirstLaunch = 'first_launch';
-  static const keyLastMoodDate = 'last_mood_date';
-  static const keyDarkMode = 'dark_mode';
+  static const String _keyFirstLaunch = 'first_launch';
+  static const String _keyLastMoodDate = 'last_mood_date';
+  static const String _keyDarkMode = 'dark_mode';
+  static const String _keySelectedMood = 'selected_mood';
 
-  // Check first launch
+
   static Future<bool> isFirstLaunch() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(keyFirstLaunch) ?? true;
+    return prefs.getBool(_keyFirstLaunch) ?? true;
   }
 
-  static Future<void> setFirstLaunchFalse() async {
+  static Future<void> markFirstLaunchDone() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(keyFirstLaunch, false);
+    await prefs.setBool(_keyFirstLaunch, false);
   }
 
-  // Check if Mood done today
+
   static Future<bool> isMoodCompletedToday() async {
     final prefs = await SharedPreferences.getInstance();
-    final dateString = prefs.getString(keyLastMoodDate);
+    final dateString = prefs.getString(_keyLastMoodDate);
     if (dateString == null) return false;
 
     final lastDate = DateTime.parse(dateString);
     final now = DateTime.now();
+
     return lastDate.year == now.year &&
         lastDate.month == now.month &&
         lastDate.day == now.day;
@@ -31,51 +33,31 @@ class AppPrefs {
 
   static Future<void> setMoodCompletedToday() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(keyLastMoodDate, DateTime.now().toIso8601String());
+    await prefs.setString(
+      _keyLastMoodDate,
+      DateTime.now().toIso8601String(),
+    );
   }
 
-  // Dark mode preferences
+
   static Future<bool> isDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(keyDarkMode) ?? false;
+    return prefs.getBool(_keyDarkMode) ?? false;
   }
 
   static Future<void> setDarkMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(keyDarkMode, isDark);
+    await prefs.setBool(_keyDarkMode, isDark);
   }
 
-  // Selected mood preferences
-  static const keySelectedMood = 'selected_mood';
 
   static Future<String?> getSelectedMood() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(keySelectedMood);
+    return prefs.getString(_keySelectedMood);
   }
 
   static Future<void> setSelectedMood(String mood) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(keySelectedMood, mood);
-  }
-
-  // Last StartScreen shown date
-  static const keyLastStartScreenDate = 'last_start_screen_date';
-
-  static Future<bool> shouldShowStartScreen() async {
-    final prefs = await SharedPreferences.getInstance();
-    final dateString = prefs.getString(keyLastStartScreenDate);
-    if (dateString == null) return true; // First time
-
-    final lastDate = DateTime.parse(dateString);
-    final now = DateTime.now();
-    return lastDate.year != now.year ||
-        lastDate.month != now.month ||
-        lastDate.day != now.day;
-  }
-
-  static Future<void> setStartScreenShownToday() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        keyLastStartScreenDate, DateTime.now().toIso8601String());
+    await prefs.setString(_keySelectedMood, mood);
   }
 }

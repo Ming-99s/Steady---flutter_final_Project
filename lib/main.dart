@@ -14,7 +14,6 @@ import './models/habit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final isFirstLaunch = await AppPrefs.isFirstLaunch();
-  final shouldShowStartScreen = await AppPrefs.shouldShowStartScreen();
   final isMoodDoneToday = await AppPrefs.isMoodCompletedToday();
   await Hive.initFlutter();
   Hive.registerAdapter(HabitAdapter());
@@ -27,7 +26,6 @@ void main() async {
         create: (_) => ThemeProvider(),
         child: Steady(
           isFirstLaunch: isFirstLaunch,
-          shouldShowStartScreen: shouldShowStartScreen,
           isMoodDoneToday: isMoodDoneToday,
         ),
       ),
@@ -36,13 +34,11 @@ void main() async {
 
 class Steady extends StatelessWidget {
   final bool isFirstLaunch;
-  final bool shouldShowStartScreen;
   final bool isMoodDoneToday;
 
   const Steady({
     super.key,
     required this.isFirstLaunch,
-    required this.shouldShowStartScreen,
     required this.isMoodDoneToday,
   });
 
@@ -50,15 +46,13 @@ class Steady extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget startPage;
 
-    if (isFirstLaunch) {
-      startPage = Startscreen();
-    } else if (shouldShowStartScreen) {
-      startPage = Startscreen();
-    } else if (isMoodDoneToday) {
-      startPage = Home();
-    } else {
-      startPage = MoodScreen();
-    }
+  if (isFirstLaunch) {
+    startPage = Startscreen(); 
+  } else if (!isMoodDoneToday) {
+    startPage = MoodScreen(); 
+  } else {
+    startPage = Home();
+  }
 
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
