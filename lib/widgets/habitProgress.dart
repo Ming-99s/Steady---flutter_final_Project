@@ -4,17 +4,22 @@ import '../models/habit.dart';
 import '../repository/repoDialyGlobal.dart';
 import '../theme/appColor.dart';
 import '../screens/habitDetail.dart';
+import '../utils/helper.dart';
 
 class HabitProgress extends StatefulWidget {
   final Habit habit;
   final Function() onRefresh;
-  const HabitProgress({super.key, required this.habit,required this.onRefresh});
+  const HabitProgress({
+    super.key,
+    required this.habit,
+    required this.onRefresh,
+  });
 
   @override
-  State<HabitProgress> createState() => _HabitProgressState();
+  State<HabitProgress> createState() => HabitProgressState();
 }
 
-class _HabitProgressState extends State<HabitProgress> {
+class HabitProgressState extends State<HabitProgress> {
   final repo = dailyProgressRepo;
   final Map<DateTime, int> _progressMap = {};
   final ScrollController _scrollController = ScrollController();
@@ -23,16 +28,19 @@ class _HabitProgressState extends State<HabitProgress> {
   void initState() {
     super.initState();
     _loadProgress();
-    repo.addListener(_loadProgress);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToToday();
     });
   }
 
   @override
+  void didUpdateWidget(covariant HabitProgress oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _loadProgress();
+  }
+
+  @override
   void dispose() {
-    repo.removeListener(_loadProgress);
     _scrollController.dispose();
     super.dispose();
   }
@@ -48,36 +56,16 @@ class _HabitProgressState extends State<HabitProgress> {
   }
 
   void _scrollToToday() {
-    const double cellWidth = 16 + 6; // cell + spacing
+    const double cellWidth = 22; // cell + spacing
     DateTime today = DateTime.now();
     DateTime startDate = today.subtract(const Duration(days: 365));
-    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+    DateTime firstMonday = startDate.subtract(
+      Duration(days: startDate.weekday - 1),
+    );
     int weekIndex = ((today.difference(firstMonday).inDays) / 7).floor();
     double offset = weekIndex * cellWidth;
     if (_scrollController.hasClients) _scrollController.jumpTo(offset);
   }
-
-Color _cellColor(DateTime date) {
-  final today = DateTime.now();
-  final todayKey = DateTime(today.year, today.month, today.day);
-
-  if (date.isAfter(todayKey)) return AppColors.border;
-
-  final habitStart = DateTime(
-    widget.habit.startDate.year,
-    widget.habit.startDate.month,
-    widget.habit.startDate.day,
-  );
-  if (date.isBefore(habitStart)) return AppColors.border;
-
-  final completed = _progressMap[date] ?? 0;
-
-  if (completed == 0) return AppColors.border;
-  if (completed < widget.habit.timePerDay / 2) return const Color(0xFF90CAF9);
-
-  return AppColors.textSecondary;
-}
-
 
   bool _isCompleted(DateTime date) {
     final completed = _progressMap[date] ?? 0;
@@ -90,7 +78,9 @@ Color _cellColor(DateTime date) {
     final todayKey = DateTime(today.year, today.month, today.day);
 
     DateTime startDate = today.subtract(const Duration(days: 365));
-    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+    DateTime firstMonday = startDate.subtract(
+      Duration(days: startDate.weekday - 1),
+    );
 
     const int weekCount = 54;
     final List<List<DateTime>> weeks = [];
@@ -106,7 +96,10 @@ Color _cellColor(DateTime date) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => HabitDetailScreen(habit: widget.habit,onRefresh:widget.onRefresh ,),
+            builder: (_) => HabitDetailScreen(
+              habit: widget.habit,
+              onRefresh: widget.onRefresh,
+            ),
           ),
         );
       },
@@ -158,10 +151,16 @@ Color _cellColor(DateTime date) {
                               : AppColors.border,
                         ),
                         child: _isCompleted(todayKey)
-                            ? const Icon(Icons.check,
-                                color: AppColors.secondary, size: 20)
-                            : const Icon(Icons.task,
-                                color: AppColors.secondary, size: 20),
+                            ? const Icon(
+                                Icons.check,
+                                color: AppColors.secondary,
+                                size: 20,
+                              )
+                            : const Icon(
+                                Icons.task,
+                                color: AppColors.secondary,
+                                size: 20,
+                              ),
                       ),
                     ],
                   ),
@@ -181,14 +180,21 @@ Color _cellColor(DateTime date) {
                     padding: const EdgeInsets.only(right: 6),
                     child: Column(
                       children: week.map((date) {
-                        final normalizedDate =
-                            DateTime(date.year, date.month, date.day);
+                        final normalizedDate = DateTime(
+                          date.year,
+                          date.month,
+                          date.day,
+                        );
                         return Container(
                           width: 16,
                           height: 16,
                           margin: const EdgeInsets.symmetric(vertical: 2),
                           decoration: BoxDecoration(
-                            color: _cellColor(normalizedDate),
+                            color: cellColor(
+                              normalizedDate,
+                              widget.habit,
+                              _progressMap,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         );

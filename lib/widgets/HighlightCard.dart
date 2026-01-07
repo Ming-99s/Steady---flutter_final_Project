@@ -20,14 +20,9 @@ class Highlightcard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: dailyProgressRepo, 
-      builder: (context, _) {
         final habitProgress =
-            dailyProgressRepo.calculateHabitProgress(
-          habit.habitId,
-          habit.scheduleIndices,
-        );
+        dailyProgressRepo.calculateHabitProgress(habit.habitId, habit.scheduleIndices);
+
 
         int value;
         switch (type) {
@@ -81,9 +76,9 @@ class Highlightcard extends StatelessWidget {
                 ],
               ),
             ],
-          ),
-        );
-      },
+          
+        
+          )
     );
   }
 }

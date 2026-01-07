@@ -10,7 +10,6 @@ import '../repository/repoDialyGlobal.dart';
 class HabitCircleWidget extends StatefulWidget {
   final Habit habit;
   const HabitCircleWidget({super.key, required this.habit});
-
   @override
   State<HabitCircleWidget> createState() => _HabitCircleWidgetState();
 }
@@ -49,6 +48,7 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
     }
 
     setState(() {
+
       currentStep = dailyProgress!.completedUnits;
     });
   }
@@ -84,15 +84,26 @@ class _HabitCircleWidgetState extends State<HabitCircleWidget> {
     setState(() => holdProgress = 0.0);
   }
 
-  Future<void> _onStepCompleted() async {
-    if (dailyProgress == null) return;
+Future<void> _onStepCompleted() async {
+  if (dailyProgress == null) return;
 
-    dailyProgress!
-      ..completedUnits = currentStep
-      ..isCompleted = currentStep >= widget.habit.timePerDay;
+  dailyProgress!
+    ..completedUnits = currentStep
+    ..isCompleted = currentStep >= widget.habit.timePerDay;
 
-    await repo.upsert(dailyProgress!);
+  await repo.upsert(dailyProgress!);
+
+  final updatedProgress = repo.getToday(widget.habit.habitId);
+
+  if (mounted) {
+    setState(() {
+      dailyProgress = updatedProgress;
+      currentStep = dailyProgress!.completedUnits; 
+    });
   }
+
+}
+
 
   @override
   Widget build(BuildContext context) {

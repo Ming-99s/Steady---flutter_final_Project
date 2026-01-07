@@ -6,10 +6,12 @@ import '../repository/repoDialyGlobal.dart';
 import '../repository/habitGlobal.dart';
 import '../theme/appColor.dart';
 import '../utils/iconData.dart';
+import '../utils/helper.dart';
+import '../utils/enums.dart';
 
 class HabitProgressDetail extends StatefulWidget {
   final Habit habit;
-  const HabitProgressDetail({super.key, required this.habit,});
+  const HabitProgressDetail({super.key, required this.habit});
 
   @override
   State<HabitProgressDetail> createState() => HabitProgressDetailState();
@@ -28,13 +30,11 @@ class HabitProgressDetailState extends State<HabitProgressDetail> {
     _loadProgress();
     _loadHabit();
 
-
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToToday());
   }
 
   @override
   void dispose() {
-    repo.removeListener(_loadProgress);
     _scrollController.dispose();
     super.dispose();
   }
@@ -48,12 +48,11 @@ class HabitProgressDetailState extends State<HabitProgressDetail> {
     }
   }
 
-void refresh() {
-  setState(() {
-    _loadHabit();
-  });
-}
-
+  void refresh() {
+    setState(() {
+      _loadHabit();
+    });
+  }
 
   void _loadProgress() {
     final all = repo.getAllForHabit(_habit.habitId);
@@ -66,33 +65,16 @@ void refresh() {
   }
 
   void _scrollToToday() {
-    const double cellWidth = 16 + 6;
+    const double cellWidth = 22;
     DateTime today = DateTime.now();
     DateTime startDate = today.subtract(const Duration(days: 365));
-    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+    DateTime firstMonday = startDate.subtract(
+      Duration(days: startDate.weekday - 1),
+    );
     int weekIndex = ((today.difference(firstMonday).inDays) / 7).floor();
     double offset = weekIndex * cellWidth;
     if (_scrollController.hasClients) _scrollController.jumpTo(offset);
   }
-
-Color _cellColor(DateTime date) {
-  final completed = _progressMap[date] ?? 0;
-
-  final habitStart = DateTime(_habit.startDate.year, _habit.startDate.month, _habit.startDate.day);
-  final todayKey = DateTime.now(); 
-
-  if (completed == 0 && (date.isAfter(todayKey) || date.isBefore(habitStart))) {
-    return AppColors.border;
-  }
-
-  if (completed > 0 && completed < _habit.timePerDay / 2) return const Color(0xFF90CAF9);
-
-  if (completed >= _habit.timePerDay / 2) return AppColors.textSecondary;
-
-  return AppColors.border;
-}
-
-
 
   bool _isCompleted(DateTime date) {
     final completed = _progressMap[date] ?? 0;
@@ -105,7 +87,9 @@ Color _cellColor(DateTime date) {
     final todayKey = DateTime(today.year, today.month, today.day);
 
     DateTime startDate = today.subtract(const Duration(days: 365));
-    DateTime firstMonday = startDate.subtract(Duration(days: startDate.weekday - 1));
+    DateTime firstMonday = startDate.subtract(
+      Duration(days: startDate.weekday - 1),
+    );
 
     const int weekCount = 54;
     final List<List<DateTime>> weeks = [];
@@ -123,10 +107,15 @@ Color _cellColor(DateTime date) {
       final firstDayOfWeek = week.first;
       final monthName = DateFormat.MMM().format(firstDayOfWeek);
       if (monthName != lastMonth && firstDayOfWeek.day <= 7) {
-        monthLabels.add(SizedBox(
-          width: 22,
-          child: Text(monthName, style: const TextStyle(fontSize: 10, color: AppColors.offNav)),
-        ));
+        monthLabels.add(
+          SizedBox(
+            width: 22,
+            child: Text(
+              monthName,
+              style: const TextStyle(fontSize: 10, color: AppColors.offNav),
+            ),
+          ),
+        );
         lastMonth = monthName;
       } else {
         monthLabels.add(const SizedBox(width: 22));
@@ -152,8 +141,11 @@ Color _cellColor(DateTime date) {
                   color: AppColors.border,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(iconMap[_habit.iconName] ?? Icons.help_outline,
-                    color: AppColors.primary, size: 26),
+                child: Icon(
+                  iconMap[_habit.iconName] ?? Icons.help_outline,
+                  color: AppColors.primary,
+                  size: 26,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -163,28 +155,44 @@ Color _cellColor(DateTime date) {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_habit.title,
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.getTextPrimary(context))),
+                          Text(
+                            _habit.title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getTextPrimary(context),
+                            ),
+                          ),
                           if (_habit.description?.isNotEmpty == true)
-                            Text(_habit.description!,
-                                style: const TextStyle(
-                                    fontSize: 13, color: AppColors.offNav)),
+                            Text(
+                              _habit.description!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.offNav,
+                              ),
+                            ),
                         ],
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _isCompleted(todayKey)
-                              ? AppColors.darkPrimary
-                              : AppColors.border),
+                        shape: BoxShape.circle,
+                        color: _isCompleted(todayKey)
+                            ? AppColors.darkPrimary
+                            : AppColors.border,
+                      ),
                       child: _isCompleted(todayKey)
-                          ? const Icon(Icons.check, color: AppColors.secondary, size: 20)
-                          : const Icon(Icons.task, color: AppColors.secondary, size: 20),
+                          ? const Icon(
+                              Icons.check,
+                              color: AppColors.secondary,
+                              size: 20,
+                            )
+                          : const Icon(
+                              Icons.task,
+                              color: AppColors.secondary,
+                              size: 20,
+                            ),
                     ),
                   ],
                 ),
@@ -198,16 +206,22 @@ Color _cellColor(DateTime date) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Column(
-                children: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                    .map((day) => SizedBox(
-                          height: 20,
-                          width: 25,
-                          child: Center(
-                              child: Text(day,
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.offNav))),
-                        ))
+                children: daysOfWeek
+                    .map(
+                      (day) => SizedBox(
+                        height: 20,
+                        width: 25,
+                        child: Center(
+                          child: Text(
+                            day,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.offNav,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
               const SizedBox(width: 10),
@@ -226,20 +240,30 @@ Color _cellColor(DateTime date) {
                             child: Column(
                               children: week.map((date) {
                                 final normalizedDate = DateTime(
-                                    date.year, date.month, date.day);
+                                  date.year,
+                                  date.month,
+                                  date.day,
+                                );
                                 final isToday = normalizedDate == todayKey;
 
                                 return Container(
                                   width: 16,
                                   height: 16,
-                                  margin: const EdgeInsets.symmetric(vertical: 2),
+                                  margin: const EdgeInsets.symmetric(
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: _cellColor(normalizedDate),
+                                    color: cellColor(
+                                      normalizedDate,
+                                      _habit,
+                                      _progressMap,
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                     border: isToday
                                         ? Border.all(
                                             color: AppColors.textPrimary,
-                                            width: 1.5)
+                                            width: 1.5,
+                                          )
                                         : null,
                                   ),
                                 );
