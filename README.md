@@ -101,13 +101,6 @@ Streak increases ✅  /  Miss a day → streak resets 🔄
 
 ---
 
-## Screenshots
-
-| Home | Habit Detail | Streak |
-|---|---|---|
-| ![home](screenshots/home.png) | ![detail](screenshots/detail.png) | ![streak](screenshots/streak.png) |
-
----
 
 ## License
 
